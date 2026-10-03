@@ -25,7 +25,7 @@ export function useMe() {
     queryKey: accountKeys.me,
     queryFn: async () => {
       try {
-        return (await client.request(MeQuery)).me;
+        return (await client.request(MeQuery, undefined, { probe: true })).me;
       } catch (error) {
         if (error instanceof LikhoError && error.code === 'unauthenticated') return null;
         throw error;

@@ -63,10 +63,15 @@ export class LikhoClient {
     this.onUnauthenticated = options.onUnauthenticated;
   }
 
-  /** Runs one typed operation. Throws LikhoError with the API's code. */
+  /**
+   * Runs one typed operation. Throws LikhoError with the API's code. A request made only to
+   * find out whether someone is signed in passes `probe`, so that "nobody" does not count as
+   * being thrown out.
+   */
   async request<TResult, TVariables>(
     document: TypedDocumentNode<TResult, TVariables>,
-    ...[variables]: TVariables extends Record<string, never> ? [] : [TVariables]
+    variables?: TVariables,
+    options: { probe?: boolean } = {},
   ): Promise<TResult> {
     let response: Response;
     try {
@@ -89,7 +94,7 @@ export class LikhoClient {
     if (first) {
       const code = first.extensions?.code;
       const known = KNOWN.includes(code as ErrorCode) ? (code as ErrorCode) : 'error';
-      if (known === 'unauthenticated') this.onUnauthenticated?.();
+      if (known === 'unauthenticated' && !options.probe) this.onUnauthenticated?.();
       throw new LikhoError(known, first.message);
     }
     if (!body.data) throw new LikhoError('error', 'The server answered without data.');

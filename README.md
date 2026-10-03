@@ -5,7 +5,7 @@ Typed GraphQL operations generated from the API's `schema.graphql`, React hooks 
 [TanStack Query](https://tanstack.com/query), the file upload, and the live updates.
 
 ```json
-"@likho-ai/web-sdk": "https://github.com/likho-ai/likho-web-sdk/releases/download/v0.1.0/likho-ai-web-sdk-0.1.0.tgz"
+"@likho-ai/web-sdk": "https://github.com/likho-ai/likho-web-sdk/releases/download/v0.1.1/likho-ai-web-sdk-0.1.1.tgz"
 ```
 
 ## Use

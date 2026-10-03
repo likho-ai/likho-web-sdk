@@ -41,6 +41,12 @@ describe('LikhoClient', () => {
       message: 'Sign in first.',
     });
     expect(told).toBe(true);
+
+    told = false;
+    await expect(client.request(MeQuery, undefined, { probe: true })).rejects.toMatchObject({
+      code: 'unauthenticated',
+    });
+    expect(told).toBe(false);
   });
 
   it('turns unknown errors and unreachable servers into plain messages', async () => {
