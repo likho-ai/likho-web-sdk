@@ -5,4 +5,8 @@ export default tseslint.config(
   { ignores: ['dist', 'src/gen', 'node_modules'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { process: 'readonly', fetch: 'readonly', console: 'readonly' } },
+  },
 );
