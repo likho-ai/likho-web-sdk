@@ -28,7 +28,9 @@ import { LikhoProvider, useLogin, useRecordings, useUploader, useJobLive } from 
 | `useGlossary`, `useSpellings` and their upsert/delete mutations | The workspace vocabulary |
 | `useSettings`, `useUpdateSettings`, `useApiKeys`, `useCreateApiKey`, `useRevokeApiKey` | Settings and API keys |
 | `useJobLive(jobId)` | The lines of a running job as they arrive, its progress and its end. On `done`, read the stored transcript: a line may still be in flight behind the end |
-| `useWorkspaceLive()` | Keeps every recordings query fresh while the page is open |
+| `useSearch(query, filter, page, pageSize)` | Transcript lines matching a few words (either layer, typos allowed), best first, with the matches inside `<mark>`; each hit carries its recording |
+| `useImports(status)`, `useImport(id)`, `useRequestImport` | Calls asked for from the dialer by their id; the recording appears when the connector has fetched it |
+| `useWorkspaceLive()` | Keeps every recordings and imports query fresh while the page is open |
 
 Also: `LikhoClient` (the plain client, for code outside React), `uploadFile`, `subscribeLive`,
 and `toTxt` / `toSrt` / `saveTextFile` for downloads.

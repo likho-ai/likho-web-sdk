@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { subscribeLive, type LiveEvent, type LiveSegment } from '../live.js';
 import { useLikho } from '../provider.js';
+import { useRefreshImports } from './imports.js';
 import { useRefreshRecordings } from './recordings.js';
 
 export interface JobLive {
@@ -87,6 +88,7 @@ export function useJobLive(jobId: string | undefined | null, enabled = true): Jo
 export function useWorkspaceLive(enabled = true): 'connecting' | 'open' | 'error' {
   const client = useLikho();
   const refresh = useRefreshRecordings();
+  const refreshImports = useRefreshImports();
   const [connection, setConnection] = useState<'connecting' | 'open' | 'error'>('connecting');
 
   useEffect(() => {
@@ -108,7 +110,8 @@ export function useWorkspaceLive(enabled = true): 'connecting' | 'open' | 'error
     const subscription = subscribeLive(
       client.eventsUrl('/events/recordings'),
       (event) => {
-        if (event.type !== 'segment') schedule(event.recordingId);
+        if (event.type === 'import') refreshImports();
+        else if (event.type !== 'segment') schedule(event.recordingId);
       },
       setConnection,
     );
@@ -116,7 +119,7 @@ export function useWorkspaceLive(enabled = true): 'connecting' | 'open' | 'error
       subscription.close();
       if (timer) clearTimeout(timer);
     };
-  }, [client, enabled, refresh]);
+  }, [client, enabled, refresh, refreshImports]);
 
   return connection;
 }

@@ -22,7 +22,11 @@ type Documents = {
   '\n  query ApiKeys {\n    apiKeys {\n      id\n      name\n      createdAt\n      lastUsedAt\n      revokedAt\n    }\n  }\n': typeof types.ApiKeysDocument;
   '\n  mutation CreateApiKey($name: String!) {\n    createApiKey(name: $name) {\n      id\n      key\n    }\n  }\n': typeof types.CreateApiKeyDocument;
   '\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n': typeof types.RevokeApiKeyDocument;
-  '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n': typeof types.RecordingFieldsFragmentDoc;
+  '\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n': typeof types.ImportFieldsFragmentDoc;
+  '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n': typeof types.RequestImportDocument;
+  '\n  query Imports($status: [ImportStatus!], $first: Int, $after: String) {\n    imports(status: $status, first: $first, after: $after) {\n      items {\n        ...ImportFields\n      }\n      hasMore\n    }\n  }\n': typeof types.ImportsDocument;
+  '\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n': typeof types.ImportDocument;
+  '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n': typeof types.RecordingFieldsFragmentDoc;
   '\n  fragment JobFields on Job {\n    id\n    recordingId\n    status\n    modelRegistryId\n    languagePolicy\n    force\n    progressSeconds\n    totalSeconds\n    errorCode\n    errorMessage\n    transcriptId\n    createdAt\n    startedAt\n    finishedAt\n  }\n': typeof types.JobFieldsFragmentDoc;
   '\n  query Recordings($filter: RecordingFilter, $first: Int, $after: String) {\n    recordings(filter: $filter, first: $first, after: $after) {\n      items {\n        ...RecordingFields\n        jobs {\n          ...JobFields\n        }\n      }\n      hasMore\n      endCursor\n    }\n  }\n': typeof types.RecordingsDocument;
   '\n  query RecordingCounts {\n    recordingCounts {\n      uploading\n      uploaded\n      ready\n      failed\n      queued\n      transcribing\n      done\n    }\n  }\n': typeof types.RecordingCountsDocument;
@@ -32,6 +36,7 @@ type Documents = {
   '\n  query Jobs($recordingId: String, $status: [JobStatus!]) {\n    jobs(recordingId: $recordingId, status: $status) {\n      ...JobFields\n    }\n  }\n': typeof types.JobsDocument;
   '\n  mutation CreateJob($input: CreateJobInput!) {\n    createJob(input: $input) {\n      ...JobFields\n    }\n  }\n': typeof types.CreateJobDocument;
   '\n  mutation CancelJob($id: String!) {\n    cancelJob(id: $id) {\n      ...JobFields\n    }\n  }\n': typeof types.CancelJobDocument;
+  '\n  query Search($query: String!, $filter: SearchFilter, $page: Int, $pageSize: Int) {\n    search(query: $query, filter: $filter, page: $page, pageSize: $pageSize) {\n      total\n      page\n      pageSize\n      processingMs\n      hits {\n        recording {\n          ...RecordingFields\n        }\n        transcriptId\n        segmentIndex\n        startSeconds\n        endSeconds\n        textRoman\n        textScript\n        highlightRoman\n        highlightScript\n        language\n      }\n    }\n  }\n': typeof types.SearchDocument;
   '\n  fragment TranscriptFields on Transcript {\n    id\n    recordingId\n    jobId\n    version\n    modelRegistryId\n    engine\n    compute\n    script\n    createdAt\n    language {\n      detected\n      probability\n      decodedAs\n      policy\n      candidates {\n        language\n        probability\n      }\n    }\n    stats {\n      audioSeconds\n      elapsedSeconds\n      realtimeFactor\n      chunks\n      silenceSkippedSeconds\n    }\n  }\n': typeof types.TranscriptFieldsFragmentDoc;
   '\n  query Transcript($id: String!) {\n    transcript(id: $id) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n': typeof types.TranscriptDocument;
   '\n  query TranscriptVersions($recordingId: String!) {\n    transcriptVersions(recordingId: $recordingId) {\n      ...TranscriptFields\n    }\n  }\n': typeof types.TranscriptVersionsDocument;
@@ -58,7 +63,15 @@ const documents: Documents = {
   '\n  mutation CreateApiKey($name: String!) {\n    createApiKey(name: $name) {\n      id\n      key\n    }\n  }\n':
     types.CreateApiKeyDocument,
   '\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n': types.RevokeApiKeyDocument,
-  '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n':
+  '\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n':
+    types.ImportFieldsFragmentDoc,
+  '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n':
+    types.RequestImportDocument,
+  '\n  query Imports($status: [ImportStatus!], $first: Int, $after: String) {\n    imports(status: $status, first: $first, after: $after) {\n      items {\n        ...ImportFields\n      }\n      hasMore\n    }\n  }\n':
+    types.ImportsDocument,
+  '\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n':
+    types.ImportDocument,
+  '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n':
     types.RecordingFieldsFragmentDoc,
   '\n  fragment JobFields on Job {\n    id\n    recordingId\n    status\n    modelRegistryId\n    languagePolicy\n    force\n    progressSeconds\n    totalSeconds\n    errorCode\n    errorMessage\n    transcriptId\n    createdAt\n    startedAt\n    finishedAt\n  }\n':
     types.JobFieldsFragmentDoc,
@@ -78,6 +91,8 @@ const documents: Documents = {
     types.CreateJobDocument,
   '\n  mutation CancelJob($id: String!) {\n    cancelJob(id: $id) {\n      ...JobFields\n    }\n  }\n':
     types.CancelJobDocument,
+  '\n  query Search($query: String!, $filter: SearchFilter, $page: Int, $pageSize: Int) {\n    search(query: $query, filter: $filter, page: $page, pageSize: $pageSize) {\n      total\n      page\n      pageSize\n      processingMs\n      hits {\n        recording {\n          ...RecordingFields\n        }\n        transcriptId\n        segmentIndex\n        startSeconds\n        endSeconds\n        textRoman\n        textScript\n        highlightRoman\n        highlightScript\n        language\n      }\n    }\n  }\n':
+    types.SearchDocument,
   '\n  fragment TranscriptFields on Transcript {\n    id\n    recordingId\n    jobId\n    version\n    modelRegistryId\n    engine\n    compute\n    script\n    createdAt\n    language {\n      detected\n      probability\n      decodedAs\n      policy\n      candidates {\n        language\n        probability\n      }\n    }\n    stats {\n      audioSeconds\n      elapsedSeconds\n      realtimeFactor\n      chunks\n      silenceSkippedSeconds\n    }\n  }\n':
     types.TranscriptFieldsFragmentDoc,
   '\n  query Transcript($id: String!) {\n    transcript(id: $id) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n':
@@ -168,8 +183,32 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n',
-): (typeof documents)['\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n'];
+  source: '\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n',
+): (typeof documents)['\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Imports($status: [ImportStatus!], $first: Int, $after: String) {\n    imports(status: $status, first: $first, after: $after) {\n      items {\n        ...ImportFields\n      }\n      hasMore\n    }\n  }\n',
+): (typeof documents)['\n  query Imports($status: [ImportStatus!], $first: Int, $after: String) {\n    imports(status: $status, first: $first, after: $after) {\n      items {\n        ...ImportFields\n      }\n      hasMore\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n',
+): (typeof documents)['\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n',
+): (typeof documents)['\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    createdAt\n    updatedAt\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -224,6 +263,12 @@ export function graphql(
 export function graphql(
   source: '\n  mutation CancelJob($id: String!) {\n    cancelJob(id: $id) {\n      ...JobFields\n    }\n  }\n',
 ): (typeof documents)['\n  mutation CancelJob($id: String!) {\n    cancelJob(id: $id) {\n      ...JobFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Search($query: String!, $filter: SearchFilter, $page: Int, $pageSize: Int) {\n    search(query: $query, filter: $filter, page: $page, pageSize: $pageSize) {\n      total\n      page\n      pageSize\n      processingMs\n      hits {\n        recording {\n          ...RecordingFields\n        }\n        transcriptId\n        segmentIndex\n        startSeconds\n        endSeconds\n        textRoman\n        textScript\n        highlightRoman\n        highlightScript\n        language\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query Search($query: String!, $filter: SearchFilter, $page: Int, $pageSize: Int) {\n    search(query: $query, filter: $filter, page: $page, pageSize: $pageSize) {\n      total\n      page\n      pageSize\n      processingMs\n      hits {\n        recording {\n          ...RecordingFields\n        }\n        transcriptId\n        segmentIndex\n        startSeconds\n        endSeconds\n        textRoman\n        textScript\n        highlightRoman\n        highlightScript\n        language\n      }\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

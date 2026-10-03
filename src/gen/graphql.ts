@@ -5,6 +5,11 @@ type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type Incremental<T> =
   T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+export type AttributeInput = {
+  key: string;
+  value: string;
+};
+
 export type CreateJobInput = {
   /** Transcribe again even if a transcript exists. */
   force?: boolean | null | undefined;
@@ -24,6 +29,8 @@ export type GlossaryTermInput = {
   term: string;
 };
 
+export type ImportStatus = 'completed' | 'failed' | 'requested';
+
 export type JobStatus = 'cancelled' | 'done' | 'failed' | 'queued' | 'running';
 
 export type RecordingFilter = {
@@ -35,7 +42,18 @@ export type RecordingFilter = {
 export type RecordingStatus =
   'done' | 'failed' | 'queued' | 'ready' | 'transcribing' | 'uploaded' | 'uploading';
 
+export type RequestImportInput = {
+  /** The call’s id in the dialer (its crt_object_id). */
+  externalId: string;
+  /** Which connector; empty = the default one. */
+  source?: string | null | undefined;
+  /** Transcribe once stored (default true). */
+  transcribe?: boolean | null | undefined;
+};
+
 export type RequestUploadInput = {
+  /** Facts about the call: campaign, agent, ... */
+  attributes?: Array<AttributeInput> | null | undefined;
   contentType?: string | null | undefined;
   /** Your own id for the call. */
   externalId?: string | null | undefined;
@@ -43,6 +61,19 @@ export type RequestUploadInput = {
   /** When known: the same content is not uploaded twice. */
   sha256?: string | null | undefined;
   sizeBytes: number;
+  /** Where the call comes from (a connector’s name); API keys only. */
+  source?: string | null | undefined;
+};
+
+export type SearchFilter = {
+  /** A detected language (ISO 639-1). */
+  language?: string | null | undefined;
+  /** Only this recording. */
+  recordingId?: string | null | undefined;
+  /** Transcripts created from this moment. */
+  since?: string | null | undefined;
+  /** Transcripts created up to this moment. */
+  until?: string | null | undefined;
 };
 
 export type SpellingInput = {
@@ -117,6 +148,81 @@ export type RevokeApiKeyMutationVariables = Exact<{
 
 export type RevokeApiKeyMutation = { revokeApiKey: boolean };
 
+export type ImportFieldsFragment = {
+  id: string;
+  source: string;
+  externalId: string;
+  transcribe: boolean;
+  status: ImportStatus;
+  recordingId: string;
+  reason: string;
+  code: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RequestImportMutationVariables = Exact<{
+  input: RequestImportInput;
+}>;
+
+export type RequestImportMutation = {
+  requestImport: {
+    id: string;
+    source: string;
+    externalId: string;
+    transcribe: boolean;
+    status: ImportStatus;
+    recordingId: string;
+    reason: string;
+    code: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type ImportsQueryVariables = Exact<{
+  status?: Array<ImportStatus> | ImportStatus | null | undefined;
+  first?: number | null | undefined;
+  after?: string | null | undefined;
+}>;
+
+export type ImportsQuery = {
+  imports: {
+    hasMore: boolean;
+    items: Array<{
+      id: string;
+      source: string;
+      externalId: string;
+      transcribe: boolean;
+      status: ImportStatus;
+      recordingId: string;
+      reason: string;
+      code: string;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+  };
+};
+
+export type ImportQueryVariables = Exact<{
+  id: string;
+}>;
+
+export type ImportQuery = {
+  import: {
+    id: string;
+    source: string;
+    externalId: string;
+    transcribe: boolean;
+    status: ImportStatus;
+    recordingId: string;
+    reason: string;
+    code: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
 export type RecordingFieldsFragment = {
   id: string;
   originalName: string;
@@ -135,6 +241,7 @@ export type RecordingFieldsFragment = {
   languageProbability: number;
   createdAt: string;
   updatedAt: string;
+  attributes: Array<{ key: string; value: string }>;
 };
 
 export type JobFieldsFragment = {
@@ -198,6 +305,7 @@ export type RecordingsQuery = {
         startedAt: string | null;
         finishedAt: string | null;
       }>;
+      attributes: Array<{ key: string; value: string }>;
     }>;
   };
 };
@@ -257,6 +365,7 @@ export type RecordingQuery = {
       startedAt: string | null;
       finishedAt: string | null;
     }>;
+    attributes: Array<{ key: string; value: string }>;
   };
 };
 
@@ -286,6 +395,7 @@ export type RequestUploadMutation = {
       languageProbability: number;
       createdAt: string;
       updatedAt: string;
+      attributes: Array<{ key: string; value: string }>;
     };
     duplicateOf: { id: string; originalName: string } | null;
   };
@@ -364,6 +474,53 @@ export type CancelJobMutation = {
     createdAt: string;
     startedAt: string | null;
     finishedAt: string | null;
+  };
+};
+
+export type SearchQueryVariables = Exact<{
+  query: string;
+  filter?: SearchFilter | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
+}>;
+
+export type SearchQuery = {
+  search: {
+    total: number;
+    page: number;
+    pageSize: number;
+    processingMs: number;
+    hits: Array<{
+      transcriptId: string;
+      segmentIndex: number;
+      startSeconds: number;
+      endSeconds: number;
+      textRoman: string;
+      textScript: string;
+      highlightRoman: string;
+      highlightScript: string;
+      language: string;
+      recording: {
+        id: string;
+        originalName: string;
+        mediaId: string;
+        sizeBytes: number;
+        sha256: string;
+        durationSeconds: number;
+        channels: number;
+        sampleRate: number;
+        source: string;
+        externalId: string;
+        status: RecordingStatus;
+        failureReason: string;
+        latestTranscriptId: string;
+        detectedLanguage: string;
+        languageProbability: number;
+        createdAt: string;
+        updatedAt: string;
+        attributes: Array<{ key: string; value: string }>;
+      };
+    }>;
   };
 };
 
@@ -549,6 +706,31 @@ export type DeleteSpellingMutationVariables = Exact<{
 
 export type DeleteSpellingMutation = { deleteSpelling: boolean };
 
+export const ImportFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ImportFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Import' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcribe' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ImportFieldsFragment, unknown>;
 export const RecordingFieldsFragmentDoc = {
   kind: 'Document',
   definitions: [
@@ -569,6 +751,17 @@ export const RecordingFieldsFragmentDoc = {
           { kind: 'Field', name: { kind: 'Name', value: 'sampleRate' } },
           { kind: 'Field', name: { kind: 'Name', value: 'source' } },
           { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'attributes' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+              ],
+            },
+          },
           { kind: 'Field', name: { kind: 'Name', value: 'status' } },
           { kind: 'Field', name: { kind: 'Name', value: 'failureReason' } },
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
@@ -953,6 +1146,216 @@ export const RevokeApiKeyDocument = {
     },
   ],
 } as unknown as DocumentNode<RevokeApiKeyMutation, RevokeApiKeyMutationVariables>;
+export const RequestImportDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'RequestImport' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'RequestImportInput' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'requestImport' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ImportFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ImportFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Import' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcribe' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RequestImportMutation, RequestImportMutationVariables>;
+export const ImportsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Imports' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+          type: {
+            kind: 'ListType',
+            type: {
+              kind: 'NonNullType',
+              type: { kind: 'NamedType', name: { kind: 'Name', value: 'ImportStatus' } },
+            },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'imports' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'status' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'after' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'items' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ImportFields' } }],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'hasMore' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ImportFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Import' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcribe' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ImportsQuery, ImportsQueryVariables>;
+export const ImportDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Import' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'import' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ImportFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ImportFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Import' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcribe' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ImportQuery, ImportQueryVariables>;
 export const RecordingsDocument = {
   kind: 'Document',
   definitions: [
@@ -1048,6 +1451,17 @@ export const RecordingsDocument = {
           { kind: 'Field', name: { kind: 'Name', value: 'sampleRate' } },
           { kind: 'Field', name: { kind: 'Name', value: 'source' } },
           { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'attributes' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+              ],
+            },
+          },
           { kind: 'Field', name: { kind: 'Name', value: 'status' } },
           { kind: 'Field', name: { kind: 'Name', value: 'failureReason' } },
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
@@ -1179,6 +1593,17 @@ export const RecordingDocument = {
           { kind: 'Field', name: { kind: 'Name', value: 'sampleRate' } },
           { kind: 'Field', name: { kind: 'Name', value: 'source' } },
           { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'attributes' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+              ],
+            },
+          },
           { kind: 'Field', name: { kind: 'Name', value: 'status' } },
           { kind: 'Field', name: { kind: 'Name', value: 'failureReason' } },
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
@@ -1294,6 +1719,17 @@ export const RequestUploadDocument = {
           { kind: 'Field', name: { kind: 'Name', value: 'sampleRate' } },
           { kind: 'Field', name: { kind: 'Name', value: 'source' } },
           { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'attributes' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+              ],
+            },
+          },
           { kind: 'Field', name: { kind: 'Name', value: 'status' } },
           { kind: 'Field', name: { kind: 'Name', value: 'failureReason' } },
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
@@ -1541,6 +1977,144 @@ export const CancelJobDocument = {
     },
   ],
 } as unknown as DocumentNode<CancelJobMutation, CancelJobMutationVariables>;
+export const SearchDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Search' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'SearchFilter' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'page' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'pageSize' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'search' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'query' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'filter' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'page' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'page' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'pageSize' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'pageSize' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'page' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'pageSize' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'processingMs' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'hits' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'recording' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'RecordingFields' } },
+                          ],
+                        },
+                      },
+                      { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'segmentIndex' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'startSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'endSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textRoman' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textScript' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'highlightRoman' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'highlightScript' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'RecordingFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Recording' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalName' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'mediaId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sizeBytes' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sha256' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'durationSeconds' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'channels' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sampleRate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'attributes' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'failureReason' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'detectedLanguage' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'languageProbability' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SearchQuery, SearchQueryVariables>;
 export const TranscriptDocument = {
   kind: 'Document',
   definitions: [

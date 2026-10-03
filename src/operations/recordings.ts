@@ -12,6 +12,10 @@ export const RecordingFields = graphql(`
     sampleRate
     source
     externalId
+    attributes {
+      key
+      value
+    }
     status
     failureReason
     latestTranscriptId

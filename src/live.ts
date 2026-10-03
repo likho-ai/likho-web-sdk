@@ -4,6 +4,7 @@
  *   segment    a transcribed line: index, startSeconds, endSeconds, textScript, textRoman, totalSeconds
  *   job        status, progress or the end of a job (status, transcriptId, code, message, totalSeconds)
  *   recording  a recording changed (status, ...)
+ *   import     a call asked for from the dialer changed (requested, completed, failed)
  */
 
 export interface LiveSegment {
@@ -37,7 +38,18 @@ export interface LiveRecording {
   [key: string]: unknown;
 }
 
-export type LiveEvent = LiveSegment | LiveJob | LiveRecording;
+export interface LiveImport {
+  type: 'import';
+  id: string;
+  recordingId: string;
+  source: string;
+  externalId: string;
+  status: 'requested' | 'completed' | 'failed';
+  reason: string;
+  code: string;
+}
+
+export type LiveEvent = LiveSegment | LiveJob | LiveRecording | LiveImport;
 
 /** Turns one server-sent event into a LiveEvent, or null when it is not one. */
 export function parseLiveEvent(type: string, data: string): LiveEvent | null {
@@ -75,6 +87,19 @@ export function parseLiveEvent(type: string, data: string): LiveEvent | null {
   if (type === 'recording') {
     return { ...body, type, recordingId: String(body.recordingId ?? '') };
   }
+  if (type === 'import') {
+    const status = String(body.status ?? 'requested');
+    return {
+      type,
+      id: String(body.id ?? ''),
+      recordingId: String(body.recordingId ?? ''),
+      source: String(body.source ?? ''),
+      externalId: String(body.externalId ?? ''),
+      status: status === 'completed' || status === 'failed' ? status : 'requested',
+      reason: String(body.reason ?? ''),
+      code: String(body.code ?? ''),
+    };
+  }
   return null;
 }
 
@@ -97,7 +122,7 @@ export function subscribeLive(
     const event = parseLiveEvent(type, (raw as MessageEvent<string>).data);
     if (event) onEvent(event);
   };
-  for (const type of ['segment', 'job', 'recording']) source.addEventListener(type, handle(type));
+  for (const type of ['segment', 'job', 'recording', 'import']) source.addEventListener(type, handle(type));
   source.onopen = () => onState?.('open');
   source.onerror = () => onState?.('error');
   return { close: () => source.close() };

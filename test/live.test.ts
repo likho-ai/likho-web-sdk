@@ -1,7 +1,7 @@
 import { parseLiveEvent, subscribeLive } from '../src/live.js';
 
 describe('live events', () => {
-  it('parses the three kinds and ignores the rest', () => {
+  it('parses the four kinds and ignores the rest', () => {
     const segment = {
       jobId: 'job_1',
       recordingId: 'rec_1',
@@ -23,6 +23,30 @@ describe('live events', () => {
       type: 'recording',
       recordingId: 'rec_1',
       status: 'ready',
+    });
+    expect(
+      parseLiveEvent(
+        'import',
+        JSON.stringify({
+          id: 'imp_1',
+          externalId: 'd000-1',
+          source: 'ameyo',
+          status: 'failed',
+          code: 'no_recording',
+        }),
+      ),
+    ).toEqual({
+      type: 'import',
+      id: 'imp_1',
+      recordingId: '',
+      source: 'ameyo',
+      externalId: 'd000-1',
+      status: 'failed',
+      reason: '',
+      code: 'no_recording',
+    });
+    expect(parseLiveEvent('import', JSON.stringify({ id: 'imp_2', status: 'odd' }))).toMatchObject({
+      status: 'requested',
     });
     expect(parseLiveEvent('other', '{}')).toBeNull();
     expect(parseLiveEvent('segment', 'not json')).toBeNull();

@@ -3,7 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { LikhoClient } from '../src/client.js';
 import { useLogin, useMe } from '../src/hooks/account.js';
+import { useImports, useRequestImport } from '../src/hooks/imports.js';
 import { useRecordings, useUploader } from '../src/hooks/recordings.js';
+import { useSearch } from '../src/hooks/search.js';
 import { LikhoProvider } from '../src/provider.js';
 
 type Answer = (variables: Record<string, unknown>) => unknown;
@@ -79,6 +81,65 @@ describe('hooks', () => {
     await waitFor(() => expect(result.current.data!.pages).toHaveLength(2));
     expect(result.current.data!.pages[1]!.items[0]!.id).toBe('rec_2');
     expect(result.current.hasNextPage).toBe(false);
+  });
+
+  it('useSearch asks only with words, and useRequestImport refreshes the imports', async () => {
+    const asked: Record<string, unknown>[] = [];
+    const client = fakeApi({
+      Search: (v) => {
+        asked.push(v);
+        return {
+          search: {
+            total: 1,
+            page: 1,
+            pageSize: 20,
+            processingMs: 3,
+            hits: [
+              {
+                recording: { id: 'rec_1', originalName: 'call.mp3', status: 'done', attributes: [] },
+                transcriptId: 'trn_1',
+                segmentIndex: 2,
+                startSeconds: 10,
+                endSeconds: 12,
+                textRoman: 'order confirm hai',
+                textScript: 'ऑर्डर कन्फर्म है',
+                highlightRoman: '<mark>order</mark> confirm hai',
+                highlightScript: 'ऑर्डर कन्फर्म है',
+                language: 'hi',
+              },
+            ],
+          },
+        };
+      },
+      RequestImport: (v) => ({
+        requestImport: {
+          id: 'imp_1',
+          source: 'ameyo',
+          externalId: (v.input as { externalId: string }).externalId,
+          transcribe: true,
+          status: 'requested',
+          recordingId: '',
+          reason: '',
+          code: '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      }),
+      Imports: () => ({ imports: { items: [], hasMore: false } }),
+    });
+    const wrapper = wrapperFor(client);
+    const empty = renderHook(() => useSearch('   '), { wrapper });
+    expect(empty.result.current.fetchStatus).toBe('idle');
+    const { result } = renderHook(() => useSearch('order', { language: 'hi' }), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data!.hits[0]!.highlightRoman).toBe('<mark>order</mark> confirm hai');
+    expect(asked[0]).toMatchObject({ query: 'order', filter: { language: 'hi' }, page: 1, pageSize: 20 });
+
+    const imports = renderHook(() => useImports(), { wrapper });
+    await waitFor(() => expect(imports.result.current.isSuccess).toBe(true));
+    const request = renderHook(() => useRequestImport(), { wrapper });
+    const made = await act(() => request.result.current.mutateAsync({ externalId: 'd000-1' }));
+    expect(made).toMatchObject({ id: 'imp_1', externalId: 'd000-1', status: 'requested' });
   });
 
   it('useUploader asks for a link, sends the file with progress, and reports duplicates', async () => {
