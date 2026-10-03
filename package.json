@@ -1,0 +1,58 @@
+{
+  "name": "@likho-ai/web-sdk",
+  "version": "0.1.0",
+  "description": "Likho web client: typed GraphQL operations and React hooks for likho-api, uploads and live updates",
+  "type": "module",
+  "packageManager": "pnpm@10.34.6",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "schema"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "schema:pull": "node scripts/pull-schema.mjs",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "lint": "eslint . && prettier --check \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsup"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^19.0.0"
+  },
+  "dependencies": {
+    "@graphql-typed-document-node/core": "^3.2.0",
+    "graphql": "^16.11.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@graphql-codegen/cli": "^7.4.3",
+    "@graphql-codegen/client-preset": "^6.2.0",
+    "@tanstack/react-query": "^5.104.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "eslint": "^9.20.0",
+    "jsdom": "^30.1.1",
+    "prettier": "^3.4.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.24.0",
+    "vitest": "^4.1.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
