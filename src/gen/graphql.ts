@@ -5,6 +5,25 @@ type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type Incremental<T> =
   T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+export type AnalyticsBucket = 'day' | 'hour';
+
+export type AnalyticsDimension = 'agent' | 'campaign' | 'disposition' | 'language' | 'sentiment' | 'source';
+
+/** Narrows to calls with these facts; a field left out means any. */
+export type AnalyticsFacts = {
+  agent?: string | null | undefined;
+  campaign?: string | null | undefined;
+  disposition?: string | null | undefined;
+  /** The language detected (ISO 639-1). */
+  language?: string | null | undefined;
+  /** upload, api, or a connector’s name. */
+  source?: string | null | undefined;
+};
+
+/** calls that arrived; calls with a transcript; minutes of audio transcribed; seconds of work per second of audio; calls the model analysed; their mean score (0 to 1); analysed calls in a negative mood. */
+export type AnalyticsMetric =
+  'analysed' | 'calls' | 'minutes' | 'negative' | 'realtimeFactor' | 'score' | 'transcribed';
+
 export type AttributeInput = {
   key: string;
   value: string;
@@ -207,6 +226,56 @@ export type RevokeApiKeyMutationVariables = Exact<{
 }>;
 
 export type RevokeApiKeyMutation = { revokeApiKey: boolean };
+
+export type AnalyticsOverviewQueryVariables = Exact<{
+  since: string;
+  until: string;
+  facts?: AnalyticsFacts | null | undefined;
+}>;
+
+export type AnalyticsOverviewQuery = {
+  analyticsOverview: {
+    calls: number;
+    transcribed: number;
+    failed: number;
+    minutes: number;
+    realtimeFactor: number;
+    analysed: number;
+    score: number;
+    sentiments: Array<{ key: string; count: number }>;
+    languages: Array<{ key: string; count: number }>;
+  };
+};
+
+export type AnalyticsTimeseriesQueryVariables = Exact<{
+  metric: AnalyticsMetric;
+  bucket?: AnalyticsBucket | null | undefined;
+  since: string;
+  until: string;
+  facts?: AnalyticsFacts | null | undefined;
+}>;
+
+export type AnalyticsTimeseriesQuery = { analyticsTimeseries: Array<{ at: string; value: number }> };
+
+export type AnalyticsBreakdownQueryVariables = Exact<{
+  by: AnalyticsDimension;
+  since: string;
+  until: string;
+  facts?: AnalyticsFacts | null | undefined;
+  limit?: number | null | undefined;
+}>;
+
+export type AnalyticsBreakdownQuery = {
+  analyticsBreakdown: Array<{
+    key: string;
+    calls: number;
+    transcribed: number;
+    minutes: number;
+    analysed: number;
+    score: number;
+    negative: number;
+  }>;
+};
 
 export type ImportFieldsFragment = {
   id: string;
@@ -2018,6 +2087,282 @@ export const RevokeApiKeyDocument = {
     },
   ],
 } as unknown as DocumentNode<RevokeApiKeyMutation, RevokeApiKeyMutationVariables>;
+export const AnalyticsOverviewDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'AnalyticsOverview' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'facts' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'AnalyticsFacts' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'analyticsOverview' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'since' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'until' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'facts' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'facts' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'calls' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transcribed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'minutes' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'realtimeFactor' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'analysed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'score' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'sentiments' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'languages' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AnalyticsOverviewQuery, AnalyticsOverviewQueryVariables>;
+export const AnalyticsTimeseriesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'AnalyticsTimeseries' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'metric' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'AnalyticsMetric' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'bucket' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'AnalyticsBucket' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'facts' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'AnalyticsFacts' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'analyticsTimeseries' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'metric' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'metric' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'bucket' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'bucket' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'since' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'until' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'facts' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'facts' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'at' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AnalyticsTimeseriesQuery, AnalyticsTimeseriesQueryVariables>;
+export const AnalyticsBreakdownDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'AnalyticsBreakdown' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'by' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'AnalyticsDimension' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'facts' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'AnalyticsFacts' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'analyticsBreakdown' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'by' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'by' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'since' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'until' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'facts' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'facts' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'calls' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transcribed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'minutes' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'analysed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'score' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'negative' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AnalyticsBreakdownQuery, AnalyticsBreakdownQueryVariables>;
 export const RequestImportDocument = {
   kind: 'Document',
   definitions: [

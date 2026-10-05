@@ -22,6 +22,9 @@ type Documents = {
   '\n  query ApiKeys {\n    apiKeys {\n      id\n      name\n      createdAt\n      lastUsedAt\n      revokedAt\n    }\n  }\n': typeof types.ApiKeysDocument;
   '\n  mutation CreateApiKey($name: String!) {\n    createApiKey(name: $name) {\n      id\n      key\n    }\n  }\n': typeof types.CreateApiKeyDocument;
   '\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n': typeof types.RevokeApiKeyDocument;
+  '\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n': typeof types.AnalyticsOverviewDocument;
+  '\n  query AnalyticsTimeseries(\n    $metric: AnalyticsMetric!\n    $bucket: AnalyticsBucket\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n  ) {\n    analyticsTimeseries(metric: $metric, bucket: $bucket, since: $since, until: $until, facts: $facts) {\n      at\n      value\n    }\n  }\n': typeof types.AnalyticsTimeseriesDocument;
+  '\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n': typeof types.AnalyticsBreakdownDocument;
   '\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n': typeof types.ImportFieldsFragmentDoc;
   '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n': typeof types.RequestImportDocument;
   '\n  query Imports($status: [ImportStatus!], $first: Int, $after: String) {\n    imports(status: $status, first: $first, after: $after) {\n      items {\n        ...ImportFields\n      }\n      hasMore\n    }\n  }\n': typeof types.ImportsDocument;
@@ -97,6 +100,12 @@ const documents: Documents = {
   '\n  mutation CreateApiKey($name: String!) {\n    createApiKey(name: $name) {\n      id\n      key\n    }\n  }\n':
     types.CreateApiKeyDocument,
   '\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n': types.RevokeApiKeyDocument,
+  '\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n':
+    types.AnalyticsOverviewDocument,
+  '\n  query AnalyticsTimeseries(\n    $metric: AnalyticsMetric!\n    $bucket: AnalyticsBucket\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n  ) {\n    analyticsTimeseries(metric: $metric, bucket: $bucket, since: $since, until: $until, facts: $facts) {\n      at\n      value\n    }\n  }\n':
+    types.AnalyticsTimeseriesDocument,
+  '\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n':
+    types.AnalyticsBreakdownDocument,
   '\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n':
     types.ImportFieldsFragmentDoc,
   '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n':
@@ -276,6 +285,24 @@ export function graphql(
 export function graphql(
   source: '\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n',
 ): (typeof documents)['\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query AnalyticsTimeseries(\n    $metric: AnalyticsMetric!\n    $bucket: AnalyticsBucket\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n  ) {\n    analyticsTimeseries(metric: $metric, bucket: $bucket, since: $since, until: $until, facts: $facts) {\n      at\n      value\n    }\n  }\n',
+): (typeof documents)['\n  query AnalyticsTimeseries(\n    $metric: AnalyticsMetric!\n    $bucket: AnalyticsBucket\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n  ) {\n    analyticsTimeseries(metric: $metric, bucket: $bucket, since: $since, until: $until, facts: $facts) {\n      at\n      value\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n',
+): (typeof documents)['\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -6,6 +6,13 @@ import { useLogin, useMe } from '../src/hooks/account.js';
 import { useImports, useRequestImport } from '../src/hooks/imports.js';
 import { useRecordings, useUploader } from '../src/hooks/recordings.js';
 import { useCorrectSegment, useTranscript } from '../src/hooks/transcripts.js';
+import {
+  lastDays,
+  useAnalyticsBreakdown,
+  useAnalyticsOverview,
+  useAnalyticsTimeseries,
+  yesterday,
+} from '../src/hooks/analytics.js';
 import { useAnalyseRecording, useInsights, useInsightsStatus } from '../src/hooks/insights.js';
 import { useRecordingLive } from '../src/hooks/live.js';
 import { useSearch } from '../src/hooks/search.js';
@@ -179,6 +186,63 @@ describe('hooks', () => {
     } finally {
       globalThis.EventSource = original;
     }
+  });
+
+  it('the analytics hooks ask for the window and the facts, and the windows are whole local days', async () => {
+    const asked: Record<string, unknown>[] = [];
+    const client = fakeApi({
+      AnalyticsOverview: (v) => {
+        asked.push(v);
+        return {
+          analyticsOverview: {
+            calls: 12,
+            transcribed: 10,
+            failed: 1,
+            minutes: 25.5,
+            realtimeFactor: 0.9,
+            analysed: 4,
+            score: 0.75,
+            sentiments: [{ key: 'positive', count: 3 }],
+            languages: [{ key: 'hi', count: 8 }],
+          },
+        };
+      },
+      AnalyticsTimeseries: (v) => {
+        asked.push(v);
+        return { analyticsTimeseries: [{ at: '2026-10-01T00:00:00.000Z', value: 5 }] };
+      },
+      AnalyticsBreakdown: (v) => {
+        asked.push(v);
+        return {
+          analyticsBreakdown: [
+            { key: 'asha', calls: 7, transcribed: 7, minutes: 15, analysed: 3, score: 0.8, negative: 1 },
+          ],
+        };
+      },
+    });
+    const wrapper = wrapperFor(client);
+    const window = { since: '2026-10-01T00:00:00.000Z', until: '2026-10-03T00:00:00.000Z' };
+    const overview = renderHook(() => useAnalyticsOverview(window, { campaign: 'sale' }), { wrapper });
+    await waitFor(() => expect(overview.result.current.data?.calls).toBe(12));
+    expect(asked[0]).toEqual({ ...window, facts: { campaign: 'sale' } });
+    const series = renderHook(() => useAnalyticsTimeseries('minutes', window, undefined, 'hour'), {
+      wrapper,
+    });
+    await waitFor(() => expect(series.result.current.data).toHaveLength(1));
+    expect(asked[1]).toEqual({ metric: 'minutes', bucket: 'hour', ...window });
+    const rows = renderHook(() => useAnalyticsBreakdown('agent', window, undefined, 10), { wrapper });
+    await waitFor(() => expect(rows.result.current.data?.[0]?.key).toBe('asha'));
+    expect(asked[2]).toEqual({ by: 'agent', ...window, limit: 10 });
+
+    const today = new Date(2026, 9, 5, 15, 30); // 5 October 2026, mid-afternoon, local time
+    expect(yesterday(today)).toEqual({
+      since: new Date(2026, 9, 4).toISOString(),
+      until: new Date(2026, 9, 5).toISOString(),
+    });
+    expect(lastDays(7, today)).toEqual({
+      since: new Date(2026, 8, 29).toISOString(),
+      until: new Date(2026, 9, 6).toISOString(),
+    });
   });
 
   it('useSearch asks only with words, and useRequestImport refreshes the imports', async () => {

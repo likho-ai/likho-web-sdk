@@ -20,7 +20,12 @@ export * from './hooks/search.js';
 export * from './hooks/imports.js';
 export * from './hooks/users.js';
 export * from './hooks/insights.js';
+export * from './hooks/analytics.js';
 export type {
+  AnalyticsBucket,
+  AnalyticsDimension,
+  AnalyticsFacts,
+  AnalyticsMetric,
   AuditFilterInput,
   CorrectSegmentInput,
   CreateJobInput,
@@ -57,6 +62,13 @@ export type InsightCheck = import('./gen/graphql.js').InsightsFieldsFragment['ch
 export type InsightScore = import('./gen/graphql.js').InsightsFieldsFragment['scores'][number];
 /** Whether insights are made at all (a model is configured) and by which model. */
 export type InsightsStatus = import('./gen/graphql.js').InsightsStatusQuery['insightsStatus'];
+/** What happened to the calls in a window. */
+export type AnalyticsOverview = import('./gen/graphql.js').AnalyticsOverviewQuery['analyticsOverview'];
+/** One bucket of a timeseries. */
+export type AnalyticsPoint =
+  import('./gen/graphql.js').AnalyticsTimeseriesQuery['analyticsTimeseries'][number];
+/** One line of a breakdown. */
+export type AnalyticsRow = import('./gen/graphql.js').AnalyticsBreakdownQuery['analyticsBreakdown'][number];
 /** A recording with its insights (null until analysed), as the insights page lists them. */
 export type RecordingWithInsights =
   import('./gen/graphql.js').RecordingsWithInsightsQuery['recordings']['items'][number];
