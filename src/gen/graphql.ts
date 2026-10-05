@@ -964,10 +964,47 @@ export type AuditLogQuery = {
   };
 };
 
+export type GlossaryTermFieldsFragment = {
+  id: string;
+  term: string;
+  language: string;
+  enabled: boolean;
+  note: string;
+  isPhrase: boolean;
+  heard: number;
+  lastHeardAt: string | null;
+};
+
+export type SpellingFieldsFragment = {
+  id: string;
+  source: string;
+  target: string;
+  isPhrase: boolean;
+  enabled: boolean;
+  applied: number;
+  lastAppliedAt: string | null;
+  examples: Array<{
+    recordingId: string;
+    segmentIndex: number;
+    before: string;
+    after: string;
+    heardAt: string | null;
+  }>;
+};
+
 export type GlossaryQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GlossaryQuery = {
-  glossary: Array<{ id: string; term: string; language: string; enabled: boolean; note: string }>;
+  glossary: Array<{
+    id: string;
+    term: string;
+    language: string;
+    enabled: boolean;
+    note: string;
+    isPhrase: boolean;
+    heard: number;
+    lastHeardAt: string | null;
+  }>;
 };
 
 export type UpsertGlossaryTermMutationVariables = Exact<{
@@ -975,7 +1012,16 @@ export type UpsertGlossaryTermMutationVariables = Exact<{
 }>;
 
 export type UpsertGlossaryTermMutation = {
-  upsertGlossaryTerm: { id: string; term: string; language: string; enabled: boolean; note: string };
+  upsertGlossaryTerm: {
+    id: string;
+    term: string;
+    language: string;
+    enabled: boolean;
+    note: string;
+    isPhrase: boolean;
+    heard: number;
+    lastHeardAt: string | null;
+  };
 };
 
 export type DeleteGlossaryTermMutationVariables = Exact<{
@@ -984,10 +1030,35 @@ export type DeleteGlossaryTermMutationVariables = Exact<{
 
 export type DeleteGlossaryTermMutation = { deleteGlossaryTerm: boolean };
 
+export type ImportGlossaryCsvMutationVariables = Exact<{
+  csv: string;
+}>;
+
+export type ImportGlossaryCsvMutation = { importGlossaryCsv: { added: number; updated: number } };
+
+export type GlossaryCsvQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GlossaryCsvQuery = { glossaryCsv: string };
+
 export type SpellingsQueryVariables = Exact<{ [key: string]: never }>;
 
 export type SpellingsQuery = {
-  spellings: Array<{ id: string; source: string; target: string; isPhrase: boolean; enabled: boolean }>;
+  spellings: Array<{
+    id: string;
+    source: string;
+    target: string;
+    isPhrase: boolean;
+    enabled: boolean;
+    applied: number;
+    lastAppliedAt: string | null;
+    examples: Array<{
+      recordingId: string;
+      segmentIndex: number;
+      before: string;
+      after: string;
+      heardAt: string | null;
+    }>;
+  }>;
 };
 
 export type UpsertSpellingMutationVariables = Exact<{
@@ -995,7 +1066,22 @@ export type UpsertSpellingMutationVariables = Exact<{
 }>;
 
 export type UpsertSpellingMutation = {
-  upsertSpelling: { id: string; source: string; target: string; isPhrase: boolean; enabled: boolean };
+  upsertSpelling: {
+    id: string;
+    source: string;
+    target: string;
+    isPhrase: boolean;
+    enabled: boolean;
+    applied: number;
+    lastAppliedAt: string | null;
+    examples: Array<{
+      recordingId: string;
+      segmentIndex: number;
+      before: string;
+      after: string;
+      heardAt: string | null;
+    }>;
+  };
 };
 
 export type DeleteSpellingMutationVariables = Exact<{
@@ -1003,6 +1089,16 @@ export type DeleteSpellingMutationVariables = Exact<{
 }>;
 
 export type DeleteSpellingMutation = { deleteSpelling: boolean };
+
+export type ImportSpellingsCsvMutationVariables = Exact<{
+  csv: string;
+}>;
+
+export type ImportSpellingsCsvMutation = { importSpellingsCsv: { added: number; updated: number } };
+
+export type SpellingsCsvQueryVariables = Exact<{ [key: string]: never }>;
+
+export type SpellingsCsvQuery = { spellingsCsv: string };
 
 export const ImportFieldsFragmentDoc = {
   kind: 'Document',
@@ -1233,6 +1329,65 @@ export const InvitationFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<InvitationFieldsFragment, unknown>;
+export const GlossaryTermFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'GlossaryTermFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'GlossaryTerm' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'term' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'note' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'heard' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'lastHeardAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GlossaryTermFieldsFragment, unknown>;
+export const SpellingFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpellingFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Spelling' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'target' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'applied' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'lastAppliedAt' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'examples' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'segmentIndex' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'before' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'after' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'heardAt' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SpellingFieldsFragment, unknown>;
 export const MeDocument = {
   kind: 'Document',
   definitions: [
@@ -3698,15 +3853,27 @@ export const GlossaryDocument = {
             name: { kind: 'Name', value: 'glossary' },
             selectionSet: {
               kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'term' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'language' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'note' } },
-              ],
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'GlossaryTermFields' } }],
             },
           },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'GlossaryTermFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'GlossaryTerm' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'term' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'note' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'heard' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'lastHeardAt' } },
         ],
       },
     },
@@ -3744,15 +3911,27 @@ export const UpsertGlossaryTermDocument = {
             ],
             selectionSet: {
               kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'term' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'language' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'note' } },
-              ],
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'GlossaryTermFields' } }],
             },
           },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'GlossaryTermFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'GlossaryTerm' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'term' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'note' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'heard' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'lastHeardAt' } },
         ],
       },
     },
@@ -3791,6 +3970,60 @@ export const DeleteGlossaryTermDocument = {
     },
   ],
 } as unknown as DocumentNode<DeleteGlossaryTermMutation, DeleteGlossaryTermMutationVariables>;
+export const ImportGlossaryCsvDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'ImportGlossaryCsv' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'csv' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'importGlossaryCsv' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'csv' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'csv' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'added' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'updated' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ImportGlossaryCsvMutation, ImportGlossaryCsvMutationVariables>;
+export const GlossaryCsvDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GlossaryCsv' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'glossaryCsv' } }],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GlossaryCsvQuery, GlossaryCsvQueryVariables>;
 export const SpellingsDocument = {
   kind: 'Document',
   definitions: [
@@ -3806,12 +4039,37 @@ export const SpellingsDocument = {
             name: { kind: 'Name', value: 'spellings' },
             selectionSet: {
               kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SpellingFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpellingFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Spelling' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'target' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'applied' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'lastAppliedAt' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'examples' },
+            selectionSet: {
+              kind: 'SelectionSet',
               selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'target' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'segmentIndex' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'before' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'after' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'heardAt' } },
               ],
             },
           },
@@ -3852,12 +4110,37 @@ export const UpsertSpellingDocument = {
             ],
             selectionSet: {
               kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SpellingFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpellingFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Spelling' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'target' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'applied' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'lastAppliedAt' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'examples' },
+            selectionSet: {
+              kind: 'SelectionSet',
               selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'target' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'isPhrase' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'segmentIndex' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'before' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'after' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'heardAt' } },
               ],
             },
           },
@@ -3899,3 +4182,57 @@ export const DeleteSpellingDocument = {
     },
   ],
 } as unknown as DocumentNode<DeleteSpellingMutation, DeleteSpellingMutationVariables>;
+export const ImportSpellingsCsvDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'ImportSpellingsCsv' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'csv' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'importSpellingsCsv' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'csv' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'csv' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'added' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'updated' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ImportSpellingsCsvMutation, ImportSpellingsCsvMutationVariables>;
+export const SpellingsCsvDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SpellingsCsv' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'spellingsCsv' } }],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SpellingsCsvQuery, SpellingsCsvQueryVariables>;

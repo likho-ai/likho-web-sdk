@@ -43,7 +43,13 @@ export type {
   CorrectionFieldsFragment as Correction,
   UserFieldsFragment as User,
   InvitationFieldsFragment as Invitation,
+  GlossaryTermFieldsFragment as GlossaryTerm,
+  SpellingFieldsFragment as Spelling,
 } from './gen/graphql.js';
+/** One of the last lines a spelling was applied to: before (as the model wrote it) and after (Hinglish). */
+export type SpellingExample = import('./gen/graphql.js').SpellingFieldsFragment['examples'][number];
+/** What a CSV import did. */
+export type ImportResult = import('./gen/graphql.js').ImportGlossaryCsvMutation['importGlossaryCsv'];
 export type {
   TranscriptQuery as TranscriptResult,
   RecordingQuery as RecordingResult,

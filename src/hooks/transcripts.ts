@@ -11,7 +11,11 @@ import {
 import {
   DeleteGlossaryTermMutation,
   DeleteSpellingMutation,
+  GlossaryCsvQuery,
   GlossaryQuery,
+  ImportGlossaryCsvMutation,
+  ImportSpellingsCsvMutation,
+  SpellingsCsvQuery,
   SpellingsQuery,
   UpsertGlossaryTermMutation,
   UpsertSpellingMutation,
@@ -149,5 +153,46 @@ export function useDeleteSpelling() {
   return useMutation({
     mutationFn: (input: { id: string }) => client.request(DeleteSpellingMutation, input),
     onSuccess: () => queries.invalidateQueries({ queryKey: transcriptKeys.spellings }),
+  });
+}
+
+/**
+ * Loads many glossary terms from CSV text. The first line names the columns: term (required),
+ * language, enabled, note. A term already there is updated. Answers how many were added and updated.
+ */
+export function useImportGlossaryCsv() {
+  const client = useLikho();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: async (csv: string) =>
+      (await client.request(ImportGlossaryCsvMutation, { csv })).importGlossaryCsv,
+    onSuccess: () => queries.invalidateQueries({ queryKey: transcriptKeys.glossary }),
+  });
+}
+
+/** The glossary as CSV text (term, language, enabled, note, heard, last_heard_at), fetched on demand. */
+export function useExportGlossaryCsv() {
+  const client = useLikho();
+  return useMutation({
+    mutationFn: async () => (await client.request(GlossaryCsvQuery)).glossaryCsv,
+  });
+}
+
+/** Loads many spellings from CSV text: source and target (required), enabled. */
+export function useImportSpellingsCsv() {
+  const client = useLikho();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: async (csv: string) =>
+      (await client.request(ImportSpellingsCsvMutation, { csv })).importSpellingsCsv,
+    onSuccess: () => queries.invalidateQueries({ queryKey: transcriptKeys.spellings }),
+  });
+}
+
+/** The spellings as CSV text (source, target, enabled, applied, last_applied_at), fetched on demand. */
+export function useExportSpellingsCsv() {
+  const client = useLikho();
+  return useMutation({
+    mutationFn: async () => (await client.request(SpellingsCsvQuery)).spellingsCsv,
   });
 }

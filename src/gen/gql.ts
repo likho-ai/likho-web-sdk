@@ -60,12 +60,18 @@ type Documents = {
   '\n  mutation ResetPassword($token: String!, $password: String!) {\n    resetPassword(token: $token, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n': typeof types.ResetPasswordDocument;
   '\n  mutation ChangePassword($currentPassword: String!, $newPassword: String!) {\n    changePassword(currentPassword: $currentPassword, newPassword: $newPassword)\n  }\n': typeof types.ChangePasswordDocument;
   '\n  query AuditLog($filter: AuditFilterInput, $first: Int, $after: String) {\n    auditLog(filter: $filter, first: $first, after: $after) {\n      items {\n        id\n        actorKind\n        actorId\n        actorName\n        action\n        targetKind\n        targetId\n        details\n        ip\n        createdAt\n      }\n      hasMore\n      endCursor\n    }\n  }\n': typeof types.AuditLogDocument;
-  '\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n': typeof types.GlossaryDocument;
-  '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n': typeof types.UpsertGlossaryTermDocument;
+  '\n  fragment GlossaryTermFields on GlossaryTerm {\n    id\n    term\n    language\n    enabled\n    note\n    isPhrase\n    heard\n    lastHeardAt\n  }\n': typeof types.GlossaryTermFieldsFragmentDoc;
+  '\n  fragment SpellingFields on Spelling {\n    id\n    source\n    target\n    isPhrase\n    enabled\n    applied\n    lastAppliedAt\n    examples {\n      recordingId\n      segmentIndex\n      before\n      after\n      heardAt\n    }\n  }\n': typeof types.SpellingFieldsFragmentDoc;
+  '\n  query Glossary {\n    glossary {\n      ...GlossaryTermFields\n    }\n  }\n': typeof types.GlossaryDocument;
+  '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      ...GlossaryTermFields\n    }\n  }\n': typeof types.UpsertGlossaryTermDocument;
   '\n  mutation DeleteGlossaryTerm($id: String!) {\n    deleteGlossaryTerm(id: $id)\n  }\n': typeof types.DeleteGlossaryTermDocument;
-  '\n  query Spellings {\n    spellings {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n': typeof types.SpellingsDocument;
-  '\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n': typeof types.UpsertSpellingDocument;
+  '\n  mutation ImportGlossaryCsv($csv: String!) {\n    importGlossaryCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n': typeof types.ImportGlossaryCsvDocument;
+  '\n  query GlossaryCsv {\n    glossaryCsv\n  }\n': typeof types.GlossaryCsvDocument;
+  '\n  query Spellings {\n    spellings {\n      ...SpellingFields\n    }\n  }\n': typeof types.SpellingsDocument;
+  '\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      ...SpellingFields\n    }\n  }\n': typeof types.UpsertSpellingDocument;
   '\n  mutation DeleteSpelling($id: String!) {\n    deleteSpelling(id: $id)\n  }\n': typeof types.DeleteSpellingDocument;
+  '\n  mutation ImportSpellingsCsv($csv: String!) {\n    importSpellingsCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n': typeof types.ImportSpellingsCsvDocument;
+  '\n  query SpellingsCsv {\n    spellingsCsv\n  }\n': typeof types.SpellingsCsvDocument;
 };
 const documents: Documents = {
   '\n  query Me {\n    me {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n':
@@ -156,18 +162,26 @@ const documents: Documents = {
     types.ChangePasswordDocument,
   '\n  query AuditLog($filter: AuditFilterInput, $first: Int, $after: String) {\n    auditLog(filter: $filter, first: $first, after: $after) {\n      items {\n        id\n        actorKind\n        actorId\n        actorName\n        action\n        targetKind\n        targetId\n        details\n        ip\n        createdAt\n      }\n      hasMore\n      endCursor\n    }\n  }\n':
     types.AuditLogDocument,
-  '\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n':
-    types.GlossaryDocument,
-  '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n':
+  '\n  fragment GlossaryTermFields on GlossaryTerm {\n    id\n    term\n    language\n    enabled\n    note\n    isPhrase\n    heard\n    lastHeardAt\n  }\n':
+    types.GlossaryTermFieldsFragmentDoc,
+  '\n  fragment SpellingFields on Spelling {\n    id\n    source\n    target\n    isPhrase\n    enabled\n    applied\n    lastAppliedAt\n    examples {\n      recordingId\n      segmentIndex\n      before\n      after\n      heardAt\n    }\n  }\n':
+    types.SpellingFieldsFragmentDoc,
+  '\n  query Glossary {\n    glossary {\n      ...GlossaryTermFields\n    }\n  }\n': types.GlossaryDocument,
+  '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      ...GlossaryTermFields\n    }\n  }\n':
     types.UpsertGlossaryTermDocument,
   '\n  mutation DeleteGlossaryTerm($id: String!) {\n    deleteGlossaryTerm(id: $id)\n  }\n':
     types.DeleteGlossaryTermDocument,
-  '\n  query Spellings {\n    spellings {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n':
-    types.SpellingsDocument,
-  '\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n':
+  '\n  mutation ImportGlossaryCsv($csv: String!) {\n    importGlossaryCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n':
+    types.ImportGlossaryCsvDocument,
+  '\n  query GlossaryCsv {\n    glossaryCsv\n  }\n': types.GlossaryCsvDocument,
+  '\n  query Spellings {\n    spellings {\n      ...SpellingFields\n    }\n  }\n': types.SpellingsDocument,
+  '\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      ...SpellingFields\n    }\n  }\n':
     types.UpsertSpellingDocument,
   '\n  mutation DeleteSpelling($id: String!) {\n    deleteSpelling(id: $id)\n  }\n':
     types.DeleteSpellingDocument,
+  '\n  mutation ImportSpellingsCsv($csv: String!) {\n    importSpellingsCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n':
+    types.ImportSpellingsCsvDocument,
+  '\n  query SpellingsCsv {\n    spellingsCsv\n  }\n': types.SpellingsCsvDocument,
 };
 
 /**
@@ -464,14 +478,26 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n',
-): (typeof documents)['\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n'];
+  source: '\n  fragment GlossaryTermFields on GlossaryTerm {\n    id\n    term\n    language\n    enabled\n    note\n    isPhrase\n    heard\n    lastHeardAt\n  }\n',
+): (typeof documents)['\n  fragment GlossaryTermFields on GlossaryTerm {\n    id\n    term\n    language\n    enabled\n    note\n    isPhrase\n    heard\n    lastHeardAt\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n',
-): (typeof documents)['\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n'];
+  source: '\n  fragment SpellingFields on Spelling {\n    id\n    source\n    target\n    isPhrase\n    enabled\n    applied\n    lastAppliedAt\n    examples {\n      recordingId\n      segmentIndex\n      before\n      after\n      heardAt\n    }\n  }\n',
+): (typeof documents)['\n  fragment SpellingFields on Spelling {\n    id\n    source\n    target\n    isPhrase\n    enabled\n    applied\n    lastAppliedAt\n    examples {\n      recordingId\n      segmentIndex\n      before\n      after\n      heardAt\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Glossary {\n    glossary {\n      ...GlossaryTermFields\n    }\n  }\n',
+): (typeof documents)['\n  query Glossary {\n    glossary {\n      ...GlossaryTermFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      ...GlossaryTermFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      ...GlossaryTermFields\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -482,20 +508,44 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  query Spellings {\n    spellings {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n',
-): (typeof documents)['\n  query Spellings {\n    spellings {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n'];
+  source: '\n  mutation ImportGlossaryCsv($csv: String!) {\n    importGlossaryCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n',
+): (typeof documents)['\n  mutation ImportGlossaryCsv($csv: String!) {\n    importGlossaryCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n',
-): (typeof documents)['\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      id\n      source\n      target\n      isPhrase\n      enabled\n    }\n  }\n'];
+  source: '\n  query GlossaryCsv {\n    glossaryCsv\n  }\n',
+): (typeof documents)['\n  query GlossaryCsv {\n    glossaryCsv\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Spellings {\n    spellings {\n      ...SpellingFields\n    }\n  }\n',
+): (typeof documents)['\n  query Spellings {\n    spellings {\n      ...SpellingFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      ...SpellingFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation UpsertSpelling($input: SpellingInput!) {\n    upsertSpelling(input: $input) {\n      ...SpellingFields\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
   source: '\n  mutation DeleteSpelling($id: String!) {\n    deleteSpelling(id: $id)\n  }\n',
 ): (typeof documents)['\n  mutation DeleteSpelling($id: String!) {\n    deleteSpelling(id: $id)\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation ImportSpellingsCsv($csv: String!) {\n    importSpellingsCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n',
+): (typeof documents)['\n  mutation ImportSpellingsCsv($csv: String!) {\n    importSpellingsCsv(csv: $csv) {\n      added\n      updated\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query SpellingsCsv {\n    spellingsCsv\n  }\n',
+): (typeof documents)['\n  query SpellingsCsv {\n    spellingsCsv\n  }\n'];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
