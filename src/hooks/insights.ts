@@ -1,12 +1,35 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { AnalyseRecordingMutation, InsightsQuery, InsightsStatusQuery } from '../operations/insights.js';
+import type { RecordingFilter } from '../gen/graphql.js';
+import {
+  AnalyseRecordingMutation,
+  InsightsQuery,
+  InsightsStatusQuery,
+  RecordingsWithInsightsQuery,
+} from '../operations/insights.js';
 import { useLikho } from '../provider.js';
 
 export const insightsKeys = {
   of: (recordingId: string) => ['insights', recordingId] as const,
   status: ['insights', 'status'] as const,
+  list: (filter: RecordingFilter | undefined, first: number, after: string | undefined) =>
+    ['insights', 'list', filter ?? {}, first, after ?? ''] as const,
 };
+
+/**
+ * The recordings, newest first, each with its insights (or null): what the insights page lists
+ * for a day, a campaign or an agent. The same filter as `useRecordings`; the previous page stays
+ * while the next loads.
+ */
+export function useRecordingsWithInsights(filter?: RecordingFilter, first = 50, after?: string) {
+  const client = useLikho();
+  return useQuery({
+    queryKey: insightsKeys.list(filter, first, after),
+    queryFn: async () =>
+      (await client.request(RecordingsWithInsightsQuery, { filter, first, after })).recordings,
+    placeholderData: keepPreviousData,
+  });
+}
 
 /**
  * What a language model says about a recording's call: a summary, the products, the customer's

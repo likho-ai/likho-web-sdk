@@ -1,4 +1,5 @@
 import { graphql } from '../gen/index.js';
+import './recordings.js'; // RecordingFields, used below
 
 export const InsightsFields = graphql(`
   fragment InsightsFields on Insights {
@@ -37,6 +38,21 @@ export const InsightsQuery = graphql(`
   query Insights($recordingId: String!) {
     insights(recordingId: $recordingId) {
       ...InsightsFields
+    }
+  }
+`);
+
+export const RecordingsWithInsightsQuery = graphql(`
+  query RecordingsWithInsights($filter: RecordingFilter, $first: Int, $after: String) {
+    recordings(filter: $filter, first: $first, after: $after) {
+      items {
+        ...RecordingFields
+        insights {
+          ...InsightsFields
+        }
+      }
+      hasMore
+      endCursor
     }
   }
 `);

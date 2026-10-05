@@ -34,6 +34,7 @@ import { LikhoProvider, useLogin, useRecordings, useUploader, useJobLive } from 
 | `useWorkspaceLive()` | Keeps every recordings and imports query fresh while the page is open |
 | `useInsights(recordingId)`, `useInsightsStatus()`, `useAnalyseRecording` | What a language model says about the call: a summary, the products, the customer's mood and the auditor's form pre-filled (`null` until it has been analysed); whether a model is configured at all (without one no transcript text leaves); ask for them now, or again with `force` |
 | `useRecordingLive(recordingId)` | Follows one recording while its page is open: a job or status change refreshes it, the model's answer refreshes its insights (and says when it failed, with why) |
+| `useRecordingsWithInsights(filter, first, after)` | The recordings newest first, each with its insights or `null`: a day's calls with their summaries and scores, narrowed like `useRecordings` |
 | `useUsers`, `useInvitations`, `useInviteUser`, `useRevokeInvitation`, `useSetUserRole`, `useDisableUser`, `useEnableUser` | The people of the workspace (admins): invite by email with a role, change roles, disable and enable |
 | `useInvitation(token)`, `useAcceptInvitation`, `useRequestPasswordReset`, `useResetPassword`, `useChangePassword` | Signing in through an invitation or reset link (no sign-in needed), changing your own password |
 | `useAuditLog(filter, first)` | Who changed what, newest first, page by page (admins) |

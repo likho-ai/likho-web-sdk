@@ -329,6 +329,59 @@ export type InsightsQuery = {
   } | null;
 };
 
+export type RecordingsWithInsightsQueryVariables = Exact<{
+  filter?: RecordingFilter | null | undefined;
+  first?: number | null | undefined;
+  after?: string | null | undefined;
+}>;
+
+export type RecordingsWithInsightsQuery = {
+  recordings: {
+    hasMore: boolean;
+    endCursor: string | null;
+    items: Array<{
+      id: string;
+      originalName: string;
+      mediaId: string;
+      sizeBytes: number;
+      sha256: string;
+      durationSeconds: number;
+      channels: number;
+      sampleRate: number;
+      source: string;
+      externalId: string;
+      status: RecordingStatus;
+      failureReason: string;
+      latestTranscriptId: string;
+      detectedLanguage: string;
+      languageProbability: number;
+      callTime: string;
+      createdAt: string;
+      updatedAt: string;
+      insights: {
+        id: string;
+        transcriptId: string;
+        recordingId: string;
+        transcriptVersion: number;
+        summary: string;
+        intent: string;
+        products: Array<string>;
+        sentiment: string;
+        scoreTotal: number;
+        scoreMax: number;
+        model: string;
+        inputTokens: number;
+        outputTokens: number;
+        formVersion: string;
+        createdAt: string | null;
+        checks: Array<{ key: string; label: string; answer: string; evidence: string }>;
+        scores: Array<{ key: string; label: string; score: number; max: number; reason: string }>;
+      } | null;
+      attributes: Array<{ key: string; value: string }>;
+    }>;
+  };
+};
+
 export type InsightsStatusQueryVariables = Exact<{ [key: string]: never }>;
 
 export type InsightsStatusQuery = {
@@ -2264,6 +2317,177 @@ export const InsightsDocument = {
     },
   ],
 } as unknown as DocumentNode<InsightsQuery, InsightsQueryVariables>;
+export const RecordingsWithInsightsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'RecordingsWithInsights' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'RecordingFilter' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'recordings' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'filter' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'after' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'items' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'FragmentSpread', name: { kind: 'Name', value: 'RecordingFields' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'insights' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'InsightsFields' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'hasMore' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'endCursor' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'RecordingFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Recording' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalName' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'mediaId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sizeBytes' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sha256' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'durationSeconds' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'channels' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sampleRate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'attributes' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'failureReason' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'detectedLanguage' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'languageProbability' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'callTime' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'InsightsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Insights' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'summary' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'intent' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'products' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sentiment' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'checks' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'answer' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'evidence' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'score' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'max' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreMax' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'model' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'inputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'outputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'formVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RecordingsWithInsightsQuery, RecordingsWithInsightsQueryVariables>;
 export const InsightsStatusDocument = {
   kind: 'Document',
   definitions: [

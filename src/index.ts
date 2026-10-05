@@ -57,6 +57,9 @@ export type InsightCheck = import('./gen/graphql.js').InsightsFieldsFragment['ch
 export type InsightScore = import('./gen/graphql.js').InsightsFieldsFragment['scores'][number];
 /** Whether insights are made at all (a model is configured) and by which model. */
 export type InsightsStatus = import('./gen/graphql.js').InsightsStatusQuery['insightsStatus'];
+/** A recording with its insights (null until analysed), as the insights page lists them. */
+export type RecordingWithInsights =
+  import('./gen/graphql.js').RecordingsWithInsightsQuery['recordings']['items'][number];
 /** One value of a fact about the calls, with how many recordings have it. */
 export type FacetValue = import('./gen/graphql.js').RecordingFacetsQuery['recordingFacets'][number];
 /** One of the last lines a spelling was applied to: before (as the model wrote it) and after (Hinglish). */
