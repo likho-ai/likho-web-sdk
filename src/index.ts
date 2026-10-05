@@ -17,17 +17,21 @@ export * from './hooks/transcripts.js';
 export * from './hooks/live.js';
 export * from './hooks/search.js';
 export * from './hooks/imports.js';
+export * from './hooks/users.js';
 export type {
+  AuditFilterInput,
   CorrectSegmentInput,
   CreateJobInput,
   GlossaryTermInput,
   ImportStatus,
+  InviteUserInput,
   Layer as CorrectionLayer,
   JobStatus,
   RecordingFilter,
   RecordingStatus,
   RequestImportInput,
   RequestUploadInput,
+  Role,
   SearchFilter,
   SpellingInput,
 } from './gen/graphql.js';
@@ -37,9 +41,15 @@ export type {
   TranscriptFieldsFragment as TranscriptSummary,
   ImportFieldsFragment as Import,
   CorrectionFieldsFragment as Correction,
+  UserFieldsFragment as User,
+  InvitationFieldsFragment as Invitation,
 } from './gen/graphql.js';
 export type {
   TranscriptQuery as TranscriptResult,
   RecordingQuery as RecordingResult,
   SearchQuery as SearchResult,
+  AuditLogQuery as AuditLogResult,
+  MeQuery as MeResult,
 } from './gen/graphql.js';
+/** One line of the audit log. */
+export type AuditEntry = import('./gen/graphql.js').AuditLogQuery['auditLog']['items'][number];

@@ -45,6 +45,21 @@ type Documents = {
   '\n  fragment CorrectionFields on Correction {\n    id\n    recordingId\n    transcriptId\n    correctedTranscriptId\n    segmentIndex\n    layer\n    before\n    after\n    userId\n    createdAt\n  }\n': typeof types.CorrectionFieldsFragmentDoc;
   '\n  mutation CorrectSegment($input: CorrectSegmentInput!) {\n    correctSegment(input: $input) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n': typeof types.CorrectSegmentDocument;
   '\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n': typeof types.CorrectionsDocument;
+  '\n  fragment UserFields on User {\n    id\n    email\n    name\n    role\n    createdAt\n    disabledAt\n  }\n': typeof types.UserFieldsFragmentDoc;
+  '\n  fragment InvitationFields on Invitation {\n    id\n    email\n    name\n    role\n    invitedBy\n    createdAt\n    expiresAt\n    acceptedAt\n    revokedAt\n  }\n': typeof types.InvitationFieldsFragmentDoc;
+  '\n  query Users {\n    users {\n      ...UserFields\n    }\n  }\n': typeof types.UsersDocument;
+  '\n  query Invitations {\n    invitations {\n      ...InvitationFields\n    }\n  }\n': typeof types.InvitationsDocument;
+  '\n  mutation InviteUser($input: InviteUserInput!) {\n    inviteUser(input: $input) {\n      invitation {\n        ...InvitationFields\n      }\n      link\n      sent\n    }\n  }\n': typeof types.InviteUserDocument;
+  '\n  mutation RevokeInvitation($id: String!) {\n    revokeInvitation(id: $id)\n  }\n': typeof types.RevokeInvitationDocument;
+  '\n  mutation SetUserRole($userId: String!, $role: Role!) {\n    setUserRole(userId: $userId, role: $role) {\n      ...UserFields\n    }\n  }\n': typeof types.SetUserRoleDocument;
+  '\n  mutation DisableUser($userId: String!) {\n    disableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n': typeof types.DisableUserDocument;
+  '\n  mutation EnableUser($userId: String!) {\n    enableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n': typeof types.EnableUserDocument;
+  '\n  query Invitation($token: String!) {\n    invitation(token: $token) {\n      email\n      name\n      role\n      workspace\n    }\n  }\n': typeof types.InvitationDocument;
+  '\n  mutation AcceptInvitation($token: String!, $name: String!, $password: String!) {\n    acceptInvitation(token: $token, name: $name, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n': typeof types.AcceptInvitationDocument;
+  '\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n': typeof types.RequestPasswordResetDocument;
+  '\n  mutation ResetPassword($token: String!, $password: String!) {\n    resetPassword(token: $token, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n': typeof types.ResetPasswordDocument;
+  '\n  mutation ChangePassword($currentPassword: String!, $newPassword: String!) {\n    changePassword(currentPassword: $currentPassword, newPassword: $newPassword)\n  }\n': typeof types.ChangePasswordDocument;
+  '\n  query AuditLog($filter: AuditFilterInput, $first: Int, $after: String) {\n    auditLog(filter: $filter, first: $first, after: $after) {\n      items {\n        id\n        actorKind\n        actorId\n        actorName\n        action\n        targetKind\n        targetId\n        details\n        ip\n        createdAt\n      }\n      hasMore\n      endCursor\n    }\n  }\n': typeof types.AuditLogDocument;
   '\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n': typeof types.GlossaryDocument;
   '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n': typeof types.UpsertGlossaryTermDocument;
   '\n  mutation DeleteGlossaryTerm($id: String!) {\n    deleteGlossaryTerm(id: $id)\n  }\n': typeof types.DeleteGlossaryTermDocument;
@@ -112,6 +127,35 @@ const documents: Documents = {
     types.CorrectSegmentDocument,
   '\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n':
     types.CorrectionsDocument,
+  '\n  fragment UserFields on User {\n    id\n    email\n    name\n    role\n    createdAt\n    disabledAt\n  }\n':
+    types.UserFieldsFragmentDoc,
+  '\n  fragment InvitationFields on Invitation {\n    id\n    email\n    name\n    role\n    invitedBy\n    createdAt\n    expiresAt\n    acceptedAt\n    revokedAt\n  }\n':
+    types.InvitationFieldsFragmentDoc,
+  '\n  query Users {\n    users {\n      ...UserFields\n    }\n  }\n': types.UsersDocument,
+  '\n  query Invitations {\n    invitations {\n      ...InvitationFields\n    }\n  }\n':
+    types.InvitationsDocument,
+  '\n  mutation InviteUser($input: InviteUserInput!) {\n    inviteUser(input: $input) {\n      invitation {\n        ...InvitationFields\n      }\n      link\n      sent\n    }\n  }\n':
+    types.InviteUserDocument,
+  '\n  mutation RevokeInvitation($id: String!) {\n    revokeInvitation(id: $id)\n  }\n':
+    types.RevokeInvitationDocument,
+  '\n  mutation SetUserRole($userId: String!, $role: Role!) {\n    setUserRole(userId: $userId, role: $role) {\n      ...UserFields\n    }\n  }\n':
+    types.SetUserRoleDocument,
+  '\n  mutation DisableUser($userId: String!) {\n    disableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n':
+    types.DisableUserDocument,
+  '\n  mutation EnableUser($userId: String!) {\n    enableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n':
+    types.EnableUserDocument,
+  '\n  query Invitation($token: String!) {\n    invitation(token: $token) {\n      email\n      name\n      role\n      workspace\n    }\n  }\n':
+    types.InvitationDocument,
+  '\n  mutation AcceptInvitation($token: String!, $name: String!, $password: String!) {\n    acceptInvitation(token: $token, name: $name, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n':
+    types.AcceptInvitationDocument,
+  '\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n':
+    types.RequestPasswordResetDocument,
+  '\n  mutation ResetPassword($token: String!, $password: String!) {\n    resetPassword(token: $token, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n':
+    types.ResetPasswordDocument,
+  '\n  mutation ChangePassword($currentPassword: String!, $newPassword: String!) {\n    changePassword(currentPassword: $currentPassword, newPassword: $newPassword)\n  }\n':
+    types.ChangePasswordDocument,
+  '\n  query AuditLog($filter: AuditFilterInput, $first: Int, $after: String) {\n    auditLog(filter: $filter, first: $first, after: $after) {\n      items {\n        id\n        actorKind\n        actorId\n        actorName\n        action\n        targetKind\n        targetId\n        details\n        ip\n        createdAt\n      }\n      hasMore\n      endCursor\n    }\n  }\n':
+    types.AuditLogDocument,
   '\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n':
     types.GlossaryDocument,
   '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n':
@@ -326,6 +370,96 @@ export function graphql(
 export function graphql(
   source: '\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n',
 ): (typeof documents)['\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment UserFields on User {\n    id\n    email\n    name\n    role\n    createdAt\n    disabledAt\n  }\n',
+): (typeof documents)['\n  fragment UserFields on User {\n    id\n    email\n    name\n    role\n    createdAt\n    disabledAt\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment InvitationFields on Invitation {\n    id\n    email\n    name\n    role\n    invitedBy\n    createdAt\n    expiresAt\n    acceptedAt\n    revokedAt\n  }\n',
+): (typeof documents)['\n  fragment InvitationFields on Invitation {\n    id\n    email\n    name\n    role\n    invitedBy\n    createdAt\n    expiresAt\n    acceptedAt\n    revokedAt\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Users {\n    users {\n      ...UserFields\n    }\n  }\n',
+): (typeof documents)['\n  query Users {\n    users {\n      ...UserFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Invitations {\n    invitations {\n      ...InvitationFields\n    }\n  }\n',
+): (typeof documents)['\n  query Invitations {\n    invitations {\n      ...InvitationFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation InviteUser($input: InviteUserInput!) {\n    inviteUser(input: $input) {\n      invitation {\n        ...InvitationFields\n      }\n      link\n      sent\n    }\n  }\n',
+): (typeof documents)['\n  mutation InviteUser($input: InviteUserInput!) {\n    inviteUser(input: $input) {\n      invitation {\n        ...InvitationFields\n      }\n      link\n      sent\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation RevokeInvitation($id: String!) {\n    revokeInvitation(id: $id)\n  }\n',
+): (typeof documents)['\n  mutation RevokeInvitation($id: String!) {\n    revokeInvitation(id: $id)\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation SetUserRole($userId: String!, $role: Role!) {\n    setUserRole(userId: $userId, role: $role) {\n      ...UserFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation SetUserRole($userId: String!, $role: Role!) {\n    setUserRole(userId: $userId, role: $role) {\n      ...UserFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation DisableUser($userId: String!) {\n    disableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation DisableUser($userId: String!) {\n    disableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation EnableUser($userId: String!) {\n    enableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation EnableUser($userId: String!) {\n    enableUser(userId: $userId) {\n      ...UserFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Invitation($token: String!) {\n    invitation(token: $token) {\n      email\n      name\n      role\n      workspace\n    }\n  }\n',
+): (typeof documents)['\n  query Invitation($token: String!) {\n    invitation(token: $token) {\n      email\n      name\n      role\n      workspace\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation AcceptInvitation($token: String!, $name: String!, $password: String!) {\n    acceptInvitation(token: $token, name: $name, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n',
+): (typeof documents)['\n  mutation AcceptInvitation($token: String!, $name: String!, $password: String!) {\n    acceptInvitation(token: $token, name: $name, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n',
+): (typeof documents)['\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation ResetPassword($token: String!, $password: String!) {\n    resetPassword(token: $token, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n',
+): (typeof documents)['\n  mutation ResetPassword($token: String!, $password: String!) {\n    resetPassword(token: $token, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation ChangePassword($currentPassword: String!, $newPassword: String!) {\n    changePassword(currentPassword: $currentPassword, newPassword: $newPassword)\n  }\n',
+): (typeof documents)['\n  mutation ChangePassword($currentPassword: String!, $newPassword: String!) {\n    changePassword(currentPassword: $currentPassword, newPassword: $newPassword)\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query AuditLog($filter: AuditFilterInput, $first: Int, $after: String) {\n    auditLog(filter: $filter, first: $first, after: $after) {\n      items {\n        id\n        actorKind\n        actorId\n        actorName\n        action\n        targetKind\n        targetId\n        details\n        ip\n        createdAt\n      }\n      hasMore\n      endCursor\n    }\n  }\n',
+): (typeof documents)['\n  query AuditLog($filter: AuditFilterInput, $first: Int, $after: String) {\n    auditLog(filter: $filter, first: $first, after: $after) {\n      items {\n        id\n        actorKind\n        actorId\n        actorName\n        action\n        targetKind\n        targetId\n        details\n        ip\n        createdAt\n      }\n      hasMore\n      endCursor\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

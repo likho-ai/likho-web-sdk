@@ -7,6 +7,14 @@ import { useImports, useRequestImport } from '../src/hooks/imports.js';
 import { useRecordings, useUploader } from '../src/hooks/recordings.js';
 import { useCorrectSegment, useTranscript } from '../src/hooks/transcripts.js';
 import { useSearch } from '../src/hooks/search.js';
+import {
+  useAcceptInvitation,
+  useAuditLog,
+  useInvitations,
+  useInviteUser,
+  useSetUserRole,
+  useUsers,
+} from '../src/hooks/users.js';
 import { LikhoProvider } from '../src/provider.js';
 
 type Answer = (variables: Record<string, unknown>) => unknown;
@@ -246,5 +254,95 @@ describe('hooks', () => {
     expect(sent[0]!.url).toBe('http://media/upload/med_1?token=t');
     expect(uploaded).toEqual(['rec_new']);
     vi.unstubAllGlobals();
+  });
+
+  it('people: an invitation refreshes the list, a role change the people, accepting signs in', async () => {
+    const invitations: Record<string, unknown>[] = [];
+    const users = [
+      { id: 'usr_1', email: 'a@b.c', name: 'A', role: 'admin', createdAt: 't', disabledAt: null },
+    ];
+    const client = fakeApi({
+      Users: () => ({ users }),
+      Invitations: () => ({ invitations }),
+      InviteUser: (v) => {
+        const input = v.input as { email: string; role: string };
+        const invitation = {
+          id: 'inv_1',
+          email: input.email,
+          name: '',
+          role: input.role,
+          invitedBy: 'usr_1',
+          createdAt: 't',
+          expiresAt: 't',
+          acceptedAt: null,
+          revokedAt: null,
+        };
+        invitations.push(invitation);
+        return { inviteUser: { invitation, link: 'http://x/invite/tok', sent: false } };
+      },
+      SetUserRole: (v) => {
+        users[0]!.role = v.role as string;
+        return { setUserRole: users[0] };
+      },
+      AcceptInvitation: (v) => ({
+        acceptInvitation: { ...person, id: 'usr_2', email: 'v@b.c', name: v.name, role: 'viewer' },
+      }),
+      Me: () => null,
+    });
+    const wrapper = wrapperFor(client);
+    const list = renderHook(() => useInvitations(), { wrapper });
+    await waitFor(() => expect(list.result.current.isSuccess).toBe(true));
+    expect(list.result.current.data).toEqual([]);
+    const invite = renderHook(() => useInviteUser(), { wrapper });
+    const made = await act(() => invite.result.current.mutateAsync({ email: 'v@b.c', role: 'viewer' }));
+    expect(made).toMatchObject({ link: 'http://x/invite/tok', sent: false });
+    await waitFor(() => expect(list.result.current.data).toHaveLength(1));
+
+    const people = renderHook(() => useUsers(), { wrapper });
+    await waitFor(() => expect(people.result.current.data?.[0]?.role).toBe('admin'));
+    const setRole = renderHook(() => useSetUserRole(), { wrapper });
+    await act(() => setRole.result.current.mutateAsync({ userId: 'usr_1', role: 'member' }));
+    await waitFor(() => expect(people.result.current.data?.[0]?.role).toBe('member'));
+
+    const me = renderHook(() => useMe(), { wrapper });
+    await waitFor(() => expect(me.result.current.isSuccess).toBe(true));
+    expect(me.result.current.data).toBeNull();
+    const accept = renderHook(() => useAcceptInvitation(), { wrapper });
+    await act(() => accept.result.current.mutateAsync({ token: 'tok', name: 'Vee', password: 'pw-pw-pw-1' }));
+    await waitFor(() => expect(me.result.current.data?.email).toBe('v@b.c'));
+  });
+
+  it('useAuditLog pages with the cursor and sends the filter', async () => {
+    const asked: Record<string, unknown>[] = [];
+    const entry = (id: string) => ({
+      id,
+      actorKind: 'user',
+      actorId: 'usr_1',
+      actorName: 'A',
+      action: 'recording.deleted',
+      targetKind: 'recording',
+      targetId: 'rec_1',
+      details: '{"originalName":"call.mp3"}',
+      ip: '127.0.0.1',
+      createdAt: 't',
+    });
+    const client = fakeApi({
+      AuditLog: (v) => {
+        asked.push(v);
+        return v.after
+          ? { auditLog: { items: [entry('aud_1')], hasMore: false, endCursor: 'aud_1' } }
+          : { auditLog: { items: [entry('aud_2')], hasMore: true, endCursor: 'aud_2' } };
+      },
+    });
+    const { result } = renderHook(() => useAuditLog({ action: 'recording.deleted' }, 1), {
+      wrapper: wrapperFor(client),
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(asked[0]).toEqual({ filter: { action: 'recording.deleted' }, first: 1, after: null });
+    expect(result.current.hasNextPage).toBe(true);
+    await act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(result.current.data!.pages).toHaveLength(2));
+    expect(result.current.data!.pages.flatMap((p) => p.items.map((e) => e.id))).toEqual(['aud_2', 'aud_1']);
+    expect(asked[1]!.after).toBe('aud_2');
   });
 });

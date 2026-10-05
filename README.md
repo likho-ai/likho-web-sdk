@@ -32,6 +32,9 @@ import { LikhoProvider, useLogin, useRecordings, useUploader, useJobLive } from 
 | `useSearch(query, filter, page, pageSize)` | Transcript lines matching a few words (either layer, typos allowed), best first, with the matches inside `<mark>`; each hit carries its recording |
 | `useImports(status)`, `useImport(id)`, `useRequestImport` | Calls asked for from the dialer by their id; the recording appears when the connector has fetched it |
 | `useWorkspaceLive()` | Keeps every recordings and imports query fresh while the page is open |
+| `useUsers`, `useInvitations`, `useInviteUser`, `useRevokeInvitation`, `useSetUserRole`, `useDisableUser`, `useEnableUser` | The people of the workspace (admins): invite by email with a role, change roles, disable and enable |
+| `useInvitation(token)`, `useAcceptInvitation`, `useRequestPasswordReset`, `useResetPassword`, `useChangePassword` | Signing in through an invitation or reset link (no sign-in needed), changing your own password |
+| `useAuditLog(filter, first)` | Who changed what, newest first, page by page (admins) |
 
 Also: `LikhoClient` (the plain client, for code outside React), `uploadFile`, `subscribeLive`,
 and `toTxt` / `toSrt` / `saveTextFile` for downloads.
