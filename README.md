@@ -21,7 +21,7 @@ import { LikhoProvider, useLogin, useRecordings, useUploader, useJobLive } from 
 | Hook | What |
 | --- | --- |
 | `useMe`, `useLogin`, `useLogout` | Who is signed in (`null` when nobody is), sign in, sign out |
-| `useRecordings(filter, first)`, `useRecordingCounts`, `useRecording(id)` | The library, page by page; counts per status; one recording with its jobs and playback links |
+| `useRecordings(filter, first)`, `useRecordingCounts`, `useRecording(id)`, `useRecordingByExternalId(id)` | The library, page by page; counts per status; one recording with its jobs and playback links, by its Likho id or by the id another system knows the call by |
 | `useUploader()` | `add(files)` asks for a link per file, sends it with progress, and reports duplicates; `items` is the queue |
 | `useCreateJob`, `useCancelJob`, `useDeleteRecording` | Jobs and deletion |
 | `useTranscript(id)`, `useTranscriptVersions(recordingId)`, `useRetransliterate`, `useEngines` | Transcripts |
@@ -41,7 +41,10 @@ import { LikhoProvider, useLogin, useRecordings, useUploader, useJobLive } from 
 | `useAuditLog(filter, first)` | Who changed what, newest first, page by page (admins) |
 
 Also: `LikhoClient` (the plain client, for code outside React), `uploadFile`, `subscribeLive`,
-and `toTxt` / `toSrt` / `saveTextFile` for downloads.
+and `toTxt` / `toSrt` / `saveTextFile` for downloads. `LikhoProvider` and `LikhoClient` take a
+`token` (an API key, or the short-lived viewer token another system's backend exchanged its key
+for at `POST /api/v1/tokens/exchange`), sent as `Authorization: Bearer` instead of the session
+cookie: what a page embedded beside a call in another system uses.
 
 Errors are `LikhoError` with the API's code (`unauthenticated`, `forbidden`, `not_found`,
 `invalid`, `conflict`, `service_unavailable`), plus `network` when the server cannot be reached.

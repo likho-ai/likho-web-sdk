@@ -33,6 +33,12 @@ export interface ClientOptions {
   fetch?: typeof fetch;
   /** Called when a request is refused for lack of a session (the app shows the sign-in page). */
   onUnauthenticated?: () => void;
+  /**
+   * A token sent as `Authorization: Bearer` instead of the session cookie: an API key (a script),
+   * or the short-lived viewer token another system's backend exchanged its key for (a page that
+   * embeds the transcript beside a call).
+   */
+  token?: string;
 }
 
 interface GraphQLResponse<T> {
@@ -53,6 +59,7 @@ export class LikhoClient {
   readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
   private readonly onUnauthenticated?: () => void;
+  private readonly token?: string;
 
   constructor(options: ClientOptions = {}) {
     this.baseUrl = (options.baseUrl ?? (typeof location !== 'undefined' ? location.origin : '')).replace(
@@ -61,6 +68,16 @@ export class LikhoClient {
     );
     this.fetchImpl = options.fetch ?? fetch.bind(globalThis);
     this.onUnauthenticated = options.onUnauthenticated;
+    this.token = options.token?.trim() || undefined;
+  }
+
+  /** The headers every request carries: JSON, and the token when there is one. */
+  private headers(): Record<string, string> {
+    return {
+      'content-type': 'application/json',
+      accept: 'application/json',
+      ...(this.token ? { authorization: `Bearer ${this.token}` } : {}),
+    };
   }
 
   /**
@@ -78,7 +95,7 @@ export class LikhoClient {
       response = await this.fetchImpl(`${this.baseUrl}/graphql`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        headers: this.headers(),
         body: JSON.stringify({ query: print(document), variables: variables ?? {} }),
       });
     } catch {

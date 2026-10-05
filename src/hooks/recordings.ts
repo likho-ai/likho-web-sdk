@@ -54,6 +54,21 @@ export function useRecordings(filter?: RecordingFilter, first = 50) {
   });
 }
 
+/**
+ * One recording by the id another system knows the call by (the dialer's), exactly; `null` when
+ * the call is not in Likho. What a page embedded beside a call starts from.
+ */
+export function useRecordingByExternalId(externalId: string | undefined | null) {
+  const client = useLikho();
+  return useQuery({
+    queryKey: ['recordings', 'external', externalId ?? ''] as const,
+    queryFn: async () =>
+      (await client.request(RecordingsQuery, { filter: { externalId: externalId! }, first: 1 })).recordings
+        .items[0] ?? null,
+    enabled: Boolean(externalId),
+  });
+}
+
 export function useRecordingCounts() {
   const client = useLikho();
   return useQuery({

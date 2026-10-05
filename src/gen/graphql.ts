@@ -84,6 +84,8 @@ export type RecordingFilter = {
   campaign?: string | null | undefined;
   /** The disposition attribute, exactly. */
   disposition?: string | null | undefined;
+  /** The external id (the dialer’s id of the call), exactly. */
+  externalId?: string | null | undefined;
   /** Part of the file name or the external id. */
   search?: string | null | undefined;
   /** Calls from this moment (their call time). */

@@ -16,7 +16,7 @@ export interface LikhoProviderProps extends ClientOptions {
 export function LikhoProvider({ client, queryClient, children, ...options }: LikhoProviderProps) {
   const likho = useMemo(
     () => client ?? new LikhoClient(options),
-    [client, options.baseUrl, options.fetch, options.onUnauthenticated],
+    [client, options.baseUrl, options.fetch, options.onUnauthenticated, options.token],
   );
   const queries = useMemo(
     () =>
