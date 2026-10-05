@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { GlossaryTermInput, SpellingInput } from '../gen/graphql.js';
+import type { CorrectSegmentInput, GlossaryTermInput, SpellingInput } from '../gen/graphql.js';
 import {
+  CorrectionsQuery,
+  CorrectSegmentMutation,
   EnginesQuery,
   RetransliterateMutation,
   TranscriptQuery,
@@ -20,6 +22,7 @@ import { recordingKeys } from './recordings.js';
 export const transcriptKeys = {
   one: (id: string) => ['transcripts', 'one', id] as const,
   versions: (recordingId: string) => ['transcripts', 'versions', recordingId] as const,
+  corrections: (recordingId: string) => ['transcripts', 'corrections', recordingId] as const,
   engines: ['engines'] as const,
   glossary: ['glossary'] as const,
   spellings: ['spellings'] as const,
@@ -56,6 +59,35 @@ export function useRetransliterate() {
       void queries.invalidateQueries({ queryKey: transcriptKeys.versions(transcript.recordingId) });
       void queries.invalidateQueries({ queryKey: recordingKeys.one(transcript.recordingId) });
     },
+  });
+}
+
+/**
+ * Replaces one line with what the person wrote: the answer is the new version with every line,
+ * put straight into the cache; the versions, the corrections and the recording are refreshed.
+ */
+export function useCorrectSegment() {
+  const client = useLikho();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CorrectSegmentInput) => client.request(CorrectSegmentMutation, { input }),
+    onSuccess: (data) => {
+      const transcript = data.correctSegment;
+      queries.setQueryData(transcriptKeys.one(transcript.id), transcript);
+      void queries.invalidateQueries({ queryKey: transcriptKeys.versions(transcript.recordingId) });
+      void queries.invalidateQueries({ queryKey: transcriptKeys.corrections(transcript.recordingId) });
+      void queries.invalidateQueries({ queryKey: recordingKeys.one(transcript.recordingId) });
+    },
+  });
+}
+
+/** Every correction made to a recording's transcripts, newest first. */
+export function useCorrections(recordingId: string | undefined) {
+  const client = useLikho();
+  return useQuery({
+    queryKey: transcriptKeys.corrections(recordingId ?? ''),
+    queryFn: async () => (await client.request(CorrectionsQuery, { recordingId: recordingId! })).corrections,
+    enabled: Boolean(recordingId),
   });
 }
 

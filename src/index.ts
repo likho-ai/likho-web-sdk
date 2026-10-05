@@ -18,9 +18,11 @@ export * from './hooks/live.js';
 export * from './hooks/search.js';
 export * from './hooks/imports.js';
 export type {
+  CorrectSegmentInput,
   CreateJobInput,
   GlossaryTermInput,
   ImportStatus,
+  Layer,
   JobStatus,
   RecordingFilter,
   RecordingStatus,
@@ -34,6 +36,7 @@ export type {
   JobFieldsFragment as Job,
   TranscriptFieldsFragment as TranscriptSummary,
   ImportFieldsFragment as Import,
+  CorrectionFieldsFragment as Correction,
 } from './gen/graphql.js';
 export type {
   TranscriptQuery as TranscriptResult,

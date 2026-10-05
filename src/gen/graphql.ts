@@ -10,6 +10,15 @@ export type AttributeInput = {
   value: string;
 };
 
+export type CorrectSegmentInput = {
+  layer: Layer;
+  segmentIndex: number;
+  /** What the line should read. */
+  text: string;
+  /** The version being looked at; it must be the latest. */
+  transcriptId: string;
+};
+
 export type CreateJobInput = {
   /** Transcribe again even if a transcript exists. */
   force?: boolean | null | undefined;
@@ -32,6 +41,9 @@ export type GlossaryTermInput = {
 export type ImportStatus = 'completed' | 'failed' | 'requested';
 
 export type JobStatus = 'cancelled' | 'done' | 'failed' | 'queued' | 'running';
+
+/** script: as spoken, in its script. roman: the Hinglish. */
+export type Layer = 'roman' | 'script';
 
 export type RecordingFilter = {
   /** Part of the file name or the external id. */
@@ -666,6 +678,77 @@ export type EnginesQuery = {
   engines: Array<{ registryId: string; engine: string; available: boolean; isDefault: boolean }>;
 };
 
+export type CorrectionFieldsFragment = {
+  id: string;
+  recordingId: string;
+  transcriptId: string;
+  correctedTranscriptId: string;
+  segmentIndex: number;
+  layer: Layer;
+  before: string;
+  after: string;
+  userId: string;
+  createdAt: string;
+};
+
+export type CorrectSegmentMutationVariables = Exact<{
+  input: CorrectSegmentInput;
+}>;
+
+export type CorrectSegmentMutation = {
+  correctSegment: {
+    id: string;
+    recordingId: string;
+    jobId: string;
+    version: number;
+    modelRegistryId: string;
+    engine: string;
+    compute: string;
+    script: string;
+    createdAt: string | null;
+    segments: Array<{
+      index: number;
+      startSeconds: number;
+      endSeconds: number;
+      textScript: string;
+      textRoman: string;
+    }>;
+    language: {
+      detected: string;
+      probability: number;
+      decodedAs: string;
+      policy: string;
+      candidates: Array<{ language: string; probability: number }>;
+    };
+    stats: {
+      audioSeconds: number;
+      elapsedSeconds: number;
+      realtimeFactor: number;
+      chunks: number;
+      silenceSkippedSeconds: number;
+    };
+  };
+};
+
+export type CorrectionsQueryVariables = Exact<{
+  recordingId: string;
+}>;
+
+export type CorrectionsQuery = {
+  corrections: Array<{
+    id: string;
+    recordingId: string;
+    transcriptId: string;
+    correctedTranscriptId: string;
+    segmentIndex: number;
+    layer: Layer;
+    before: string;
+    after: string;
+    userId: string;
+    createdAt: string;
+  }>;
+};
+
 export type GlossaryQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GlossaryQuery = {
@@ -865,6 +948,31 @@ export const TranscriptFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<TranscriptFieldsFragment, unknown>;
+export const CorrectionFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'CorrectionFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Correction' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'correctedTranscriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'segmentIndex' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'layer' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'before' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'after' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<CorrectionFieldsFragment, unknown>;
 export const MeDocument = {
   kind: 'Document',
   definitions: [
@@ -2457,6 +2565,176 @@ export const EnginesDocument = {
     },
   ],
 } as unknown as DocumentNode<EnginesQuery, EnginesQueryVariables>;
+export const CorrectSegmentDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'CorrectSegment' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'CorrectSegmentInput' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'correctSegment' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'TranscriptFields' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'segments' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'startSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'endSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textScript' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textRoman' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'TranscriptFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Transcript' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'jobId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'modelRegistryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'engine' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'compute' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'script' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'language' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'detected' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'probability' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'decodedAs' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'policy' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'candidates' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'probability' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'stats' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'elapsedSeconds' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'realtimeFactor' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chunks' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'silenceSkippedSeconds' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<CorrectSegmentMutation, CorrectSegmentMutationVariables>;
+export const CorrectionsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Corrections' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'corrections' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'recordingId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'CorrectionFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'CorrectionFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Correction' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'correctedTranscriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'segmentIndex' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'layer' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'before' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'after' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<CorrectionsQuery, CorrectionsQueryVariables>;
 export const GlossaryDocument = {
   kind: 'Document',
   definitions: [

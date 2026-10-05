@@ -42,6 +42,9 @@ type Documents = {
   '\n  query TranscriptVersions($recordingId: String!) {\n    transcriptVersions(recordingId: $recordingId) {\n      ...TranscriptFields\n    }\n  }\n': typeof types.TranscriptVersionsDocument;
   '\n  mutation Retransliterate($transcriptId: String!) {\n    retransliterate(transcriptId: $transcriptId) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n': typeof types.RetransliterateDocument;
   '\n  query Engines {\n    engines {\n      registryId\n      engine\n      available\n      isDefault\n    }\n  }\n': typeof types.EnginesDocument;
+  '\n  fragment CorrectionFields on Correction {\n    id\n    recordingId\n    transcriptId\n    correctedTranscriptId\n    segmentIndex\n    layer\n    before\n    after\n    userId\n    createdAt\n  }\n': typeof types.CorrectionFieldsFragmentDoc;
+  '\n  mutation CorrectSegment($input: CorrectSegmentInput!) {\n    correctSegment(input: $input) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n': typeof types.CorrectSegmentDocument;
+  '\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n': typeof types.CorrectionsDocument;
   '\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n': typeof types.GlossaryDocument;
   '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n': typeof types.UpsertGlossaryTermDocument;
   '\n  mutation DeleteGlossaryTerm($id: String!) {\n    deleteGlossaryTerm(id: $id)\n  }\n': typeof types.DeleteGlossaryTermDocument;
@@ -103,6 +106,12 @@ const documents: Documents = {
     types.RetransliterateDocument,
   '\n  query Engines {\n    engines {\n      registryId\n      engine\n      available\n      isDefault\n    }\n  }\n':
     types.EnginesDocument,
+  '\n  fragment CorrectionFields on Correction {\n    id\n    recordingId\n    transcriptId\n    correctedTranscriptId\n    segmentIndex\n    layer\n    before\n    after\n    userId\n    createdAt\n  }\n':
+    types.CorrectionFieldsFragmentDoc,
+  '\n  mutation CorrectSegment($input: CorrectSegmentInput!) {\n    correctSegment(input: $input) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n':
+    types.CorrectSegmentDocument,
+  '\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n':
+    types.CorrectionsDocument,
   '\n  query Glossary {\n    glossary {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n':
     types.GlossaryDocument,
   '\n  mutation UpsertGlossaryTerm($input: GlossaryTermInput!) {\n    upsertGlossaryTerm(input: $input) {\n      id\n      term\n      language\n      enabled\n      note\n    }\n  }\n':
@@ -299,6 +308,24 @@ export function graphql(
 export function graphql(
   source: '\n  query Engines {\n    engines {\n      registryId\n      engine\n      available\n      isDefault\n    }\n  }\n',
 ): (typeof documents)['\n  query Engines {\n    engines {\n      registryId\n      engine\n      available\n      isDefault\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment CorrectionFields on Correction {\n    id\n    recordingId\n    transcriptId\n    correctedTranscriptId\n    segmentIndex\n    layer\n    before\n    after\n    userId\n    createdAt\n  }\n',
+): (typeof documents)['\n  fragment CorrectionFields on Correction {\n    id\n    recordingId\n    transcriptId\n    correctedTranscriptId\n    segmentIndex\n    layer\n    before\n    after\n    userId\n    createdAt\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation CorrectSegment($input: CorrectSegmentInput!) {\n    correctSegment(input: $input) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n',
+): (typeof documents)['\n  mutation CorrectSegment($input: CorrectSegmentInput!) {\n    correctSegment(input: $input) {\n      ...TranscriptFields\n      segments {\n        index\n        startSeconds\n        endSeconds\n        textScript\n        textRoman\n      }\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n',
+): (typeof documents)['\n  query Corrections($recordingId: String!) {\n    corrections(recordingId: $recordingId) {\n      ...CorrectionFields\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

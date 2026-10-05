@@ -5,6 +5,7 @@ import { LikhoClient } from '../src/client.js';
 import { useLogin, useMe } from '../src/hooks/account.js';
 import { useImports, useRequestImport } from '../src/hooks/imports.js';
 import { useRecordings, useUploader } from '../src/hooks/recordings.js';
+import { useCorrectSegment, useTranscript } from '../src/hooks/transcripts.js';
 import { useSearch } from '../src/hooks/search.js';
 import { LikhoProvider } from '../src/provider.js';
 
@@ -140,6 +141,42 @@ describe('hooks', () => {
     const request = renderHook(() => useRequestImport(), { wrapper });
     const made = await act(() => request.result.current.mutateAsync({ externalId: 'd000-1' }));
     expect(made).toMatchObject({ id: 'imp_1', externalId: 'd000-1', status: 'requested' });
+  });
+
+  it('useCorrectSegment puts the new version in the cache', async () => {
+    const version = (id: string, n: number, roman: string) => ({
+      id,
+      recordingId: 'rec_1',
+      jobId: '',
+      version: n,
+      modelRegistryId: 'm',
+      engine: 'e',
+      compute: 'int8',
+      script: 'devanagari',
+      createdAt: new Date().toISOString(),
+      language: { detected: 'hi', probability: 0.9, decodedAs: 'hi', policy: 'auto', candidates: [] },
+      stats: { audioSeconds: 1, elapsedSeconds: 1, realtimeFactor: 1, chunks: 1, silenceSkippedSeconds: 0 },
+      segments: [{ index: 0, startSeconds: 0, endSeconds: 1, textScript: 'नमस्ते', textRoman: roman }],
+    });
+    const client = fakeApi({
+      CorrectSegment: (v) => ({
+        correctSegment: version('trn_2', 2, (v.input as { text: string }).text),
+      }),
+      Transcript: () => ({ transcript: version('trn_2', 2, 'namaskar') }),
+    });
+    const wrapper = wrapperFor(client);
+    const correct = renderHook(() => useCorrectSegment(), { wrapper });
+    const made = await act(() =>
+      correct.result.current.mutateAsync({
+        transcriptId: 'trn_1',
+        segmentIndex: 0,
+        layer: 'roman',
+        text: 'namaskar',
+      }),
+    );
+    expect(made.correctSegment.segments[0]!.textRoman).toBe('namaskar');
+    const read = renderHook(() => useTranscript('trn_2'), { wrapper });
+    await waitFor(() => expect(read.result.current.data?.version).toBe(2));
   });
 
   it('useUploader asks for a link, sends the file with progress, and reports duplicates', async () => {

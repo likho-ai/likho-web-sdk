@@ -25,6 +25,7 @@ import { LikhoProvider, useLogin, useRecordings, useUploader, useJobLive } from 
 | `useUploader()` | `add(files)` asks for a link per file, sends it with progress, and reports duplicates; `items` is the queue |
 | `useCreateJob`, `useCancelJob`, `useDeleteRecording` | Jobs and deletion |
 | `useTranscript(id)`, `useTranscriptVersions(recordingId)`, `useRetransliterate`, `useEngines` | Transcripts |
+| `useCorrectSegment`, `useCorrections(recordingId)` | A line as a person wrote it: a new version, the correction kept |
 | `useGlossary`, `useSpellings` and their upsert/delete mutations | The workspace vocabulary |
 | `useSettings`, `useUpdateSettings`, `useApiKeys`, `useCreateApiKey`, `useRevokeApiKey` | Settings and API keys |
 | `useJobLive(jobId)` | The lines of a running job as they arrive, its progress and its end. On `done`, read the stored transcript: a line may still be in flight behind the end |

@@ -79,3 +79,41 @@ export const EnginesQuery = graphql(`
     }
   }
 `);
+
+export const CorrectionFields = graphql(`
+  fragment CorrectionFields on Correction {
+    id
+    recordingId
+    transcriptId
+    correctedTranscriptId
+    segmentIndex
+    layer
+    before
+    after
+    userId
+    createdAt
+  }
+`);
+
+export const CorrectSegmentMutation = graphql(`
+  mutation CorrectSegment($input: CorrectSegmentInput!) {
+    correctSegment(input: $input) {
+      ...TranscriptFields
+      segments {
+        index
+        startSeconds
+        endSeconds
+        textScript
+        textRoman
+      }
+    }
+  }
+`);
+
+export const CorrectionsQuery = graphql(`
+  query Corrections($recordingId: String!) {
+    corrections(recordingId: $recordingId) {
+      ...CorrectionFields
+    }
+  }
+`);
