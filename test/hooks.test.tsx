@@ -6,6 +6,8 @@ import { useLogin, useMe } from '../src/hooks/account.js';
 import { useImports, useRequestImport } from '../src/hooks/imports.js';
 import { useRecordings, useUploader } from '../src/hooks/recordings.js';
 import { useCorrectSegment, useTranscript } from '../src/hooks/transcripts.js';
+import { useAnalyseRecording, useInsights, useInsightsStatus } from '../src/hooks/insights.js';
+import { useRecordingLive } from '../src/hooks/live.js';
 import { useSearch } from '../src/hooks/search.js';
 import {
   useAcceptInvitation,
@@ -90,6 +92,93 @@ describe('hooks', () => {
     await waitFor(() => expect(result.current.data!.pages).toHaveLength(2));
     expect(result.current.data!.pages[1]!.items[0]!.id).toBe('rec_2');
     expect(result.current.hasNextPage).toBe(false);
+  });
+
+  it('useInsights reads them, useAnalyseRecording asks and keeps the answer, useRecordingLive hears it', async () => {
+    const insights = {
+      id: 'ins_1',
+      transcriptId: 'trn_1',
+      recordingId: 'rec_1',
+      transcriptVersion: 1,
+      summary: 'A customer ordered a product.',
+      intent: 'order',
+      products: ['Ashwagandha'],
+      sentiment: 'positive',
+      checks: [{ key: 'greeting', label: 'Greeted', answer: 'yes', evidence: 'namaste' }],
+      scores: [{ key: 'resolution', label: 'Handled', score: 9, max: 10, reason: 'Ordered.' }],
+      scoreTotal: 9,
+      scoreMax: 10,
+      model: 'fake/one',
+      inputTokens: 100,
+      outputTokens: 50,
+      formVersion: 'example-1',
+      createdAt: '2026-10-05T12:00:00.000Z',
+    };
+    let made: typeof insights | null = null;
+    const asked: Record<string, unknown>[] = [];
+    const client = fakeApi({
+      Insights: () => ({ insights: made }),
+      AnalyseRecording: (v) => {
+        asked.push(v);
+        made = insights;
+        return { analyseRecording: insights };
+      },
+      InsightsStatus: () => ({
+        insightsStatus: { enabled: true, model: 'fake/one', formVersion: 'example-1' },
+      }),
+    });
+    const wrapper = wrapperFor(client);
+    const read = renderHook(() => useInsights('rec_1'), { wrapper });
+    await waitFor(() => expect(read.result.current.isSuccess).toBe(true));
+    expect(read.result.current.data).toBeNull();
+    const status = renderHook(() => useInsightsStatus(), { wrapper });
+    await waitFor(() =>
+      expect(status.result.current.data).toEqual({
+        enabled: true,
+        model: 'fake/one',
+        formVersion: 'example-1',
+      }),
+    );
+
+    const analyse = renderHook(() => useAnalyseRecording(), { wrapper });
+    await act(() => analyse.result.current.mutateAsync({ id: 'rec_1', force: true }));
+    expect(asked).toEqual([{ id: 'rec_1', force: true }]);
+    await waitFor(() => expect(read.result.current.data?.id).toBe('ins_1'));
+
+    // The page hears the model's answer and reads the insights again.
+    const listeners: Record<string, (e: Event) => void> = {};
+    class FakeSource {
+      onopen: null | (() => void) = null;
+      onerror: null | (() => void) = null;
+      constructor(readonly url: string) {}
+      addEventListener(type: string, listener: (e: Event) => void) {
+        listeners[type] = listener;
+      }
+      close() {}
+    }
+    const original = globalThis.EventSource;
+    globalThis.EventSource = FakeSource as unknown as typeof EventSource;
+    try {
+      made = { ...insights, sentiment: 'mixed' };
+      const live = renderHook(() => useRecordingLive('rec_1'), { wrapper });
+      await waitFor(() => expect(listeners.insights).toBeDefined());
+      act(() =>
+        listeners.insights!(
+          new MessageEvent('insights', {
+            data: JSON.stringify({
+              recordingId: 'rec_1',
+              transcriptId: 'trn_1',
+              status: 'done',
+              insightsId: 'ins_1',
+            }),
+          }),
+        ),
+      );
+      expect(live.result.current.insights).toMatchObject({ status: 'done', insightsId: 'ins_1' });
+      await waitFor(() => expect(read.result.current.data?.sentiment).toBe('mixed'));
+    } finally {
+      globalThis.EventSource = original;
+    }
   });
 
   it('useSearch asks only with words, and useRequestImport refreshes the imports', async () => {

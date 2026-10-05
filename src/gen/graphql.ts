@@ -283,6 +283,85 @@ export type ImportQuery = {
   };
 };
 
+export type InsightsFieldsFragment = {
+  id: string;
+  transcriptId: string;
+  recordingId: string;
+  transcriptVersion: number;
+  summary: string;
+  intent: string;
+  products: Array<string>;
+  sentiment: string;
+  scoreTotal: number;
+  scoreMax: number;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  formVersion: string;
+  createdAt: string | null;
+  checks: Array<{ key: string; label: string; answer: string; evidence: string }>;
+  scores: Array<{ key: string; label: string; score: number; max: number; reason: string }>;
+};
+
+export type InsightsQueryVariables = Exact<{
+  recordingId: string;
+}>;
+
+export type InsightsQuery = {
+  insights: {
+    id: string;
+    transcriptId: string;
+    recordingId: string;
+    transcriptVersion: number;
+    summary: string;
+    intent: string;
+    products: Array<string>;
+    sentiment: string;
+    scoreTotal: number;
+    scoreMax: number;
+    model: string;
+    inputTokens: number;
+    outputTokens: number;
+    formVersion: string;
+    createdAt: string | null;
+    checks: Array<{ key: string; label: string; answer: string; evidence: string }>;
+    scores: Array<{ key: string; label: string; score: number; max: number; reason: string }>;
+  } | null;
+};
+
+export type InsightsStatusQueryVariables = Exact<{ [key: string]: never }>;
+
+export type InsightsStatusQuery = {
+  insightsStatus: { enabled: boolean; model: string; formVersion: string };
+};
+
+export type AnalyseRecordingMutationVariables = Exact<{
+  id: string;
+  force?: boolean | null | undefined;
+}>;
+
+export type AnalyseRecordingMutation = {
+  analyseRecording: {
+    id: string;
+    transcriptId: string;
+    recordingId: string;
+    transcriptVersion: number;
+    summary: string;
+    intent: string;
+    products: Array<string>;
+    sentiment: string;
+    scoreTotal: number;
+    scoreMax: number;
+    model: string;
+    inputTokens: number;
+    outputTokens: number;
+    formVersion: string;
+    createdAt: string | null;
+    checks: Array<{ key: string; label: string; answer: string; evidence: string }>;
+    scores: Array<{ key: string; label: string; score: number; max: number; reason: string }>;
+  };
+};
+
 export type RecordingFieldsFragment = {
   id: string;
   originalName: string;
@@ -1245,6 +1324,63 @@ export const ImportFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<ImportFieldsFragment, unknown>;
+export const InsightsFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'InsightsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Insights' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'summary' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'intent' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'products' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sentiment' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'checks' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'answer' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'evidence' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'score' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'max' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreMax' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'model' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'inputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'outputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'formVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<InsightsFieldsFragment, unknown>;
 export const RecordingFieldsFragmentDoc = {
   kind: 'Document',
   definitions: [
@@ -2039,6 +2175,221 @@ export const ImportDocument = {
     },
   ],
 } as unknown as DocumentNode<ImportQuery, ImportQueryVariables>;
+export const InsightsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Insights' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'insights' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'recordingId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'InsightsFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'InsightsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Insights' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'summary' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'intent' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'products' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sentiment' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'checks' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'answer' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'evidence' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'score' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'max' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreMax' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'model' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'inputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'outputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'formVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<InsightsQuery, InsightsQueryVariables>;
+export const InsightsStatusDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'InsightsStatus' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'insightsStatus' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'enabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'model' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'formVersion' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<InsightsStatusQuery, InsightsStatusQueryVariables>;
+export const AnalyseRecordingDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'AnalyseRecording' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'force' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'analyseRecording' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'force' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'force' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'InsightsFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'InsightsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Insights' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transcriptVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'summary' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'intent' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'products' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sentiment' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'checks' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'answer' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'evidence' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'score' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'max' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'scoreMax' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'model' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'inputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'outputTokens' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'formVersion' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AnalyseRecordingMutation, AnalyseRecordingMutationVariables>;
 export const RecordingFacetsDocument = {
   kind: 'Document',
   definitions: [

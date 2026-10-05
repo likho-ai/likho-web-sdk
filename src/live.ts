@@ -5,6 +5,7 @@
  *   job        status, progress or the end of a job (status, transcriptId, code, message, totalSeconds)
  *   recording  a recording changed (status, ...)
  *   import     a call asked for from the dialer changed (requested, completed, failed)
+ *   insights   the model's answer about a recording is in (done: sentiment, score), or not (failed: code, message)
  */
 
 export interface LiveSegment {
@@ -49,7 +50,21 @@ export interface LiveImport {
   code: string;
 }
 
-export type LiveEvent = LiveSegment | LiveJob | LiveRecording | LiveImport;
+export interface LiveInsights {
+  type: 'insights';
+  recordingId: string;
+  transcriptId: string;
+  status: 'done' | 'failed';
+  insightsId: string;
+  sentiment: string;
+  scoreTotal: number;
+  scoreMax: number;
+  model: string;
+  code: string;
+  message: string;
+}
+
+export type LiveEvent = LiveSegment | LiveJob | LiveRecording | LiveImport | LiveInsights;
 
 /** Turns one server-sent event into a LiveEvent, or null when it is not one. */
 export function parseLiveEvent(type: string, data: string): LiveEvent | null {
@@ -100,6 +115,21 @@ export function parseLiveEvent(type: string, data: string): LiveEvent | null {
       code: String(body.code ?? ''),
     };
   }
+  if (type === 'insights') {
+    return {
+      type,
+      recordingId: String(body.recordingId ?? ''),
+      transcriptId: String(body.transcriptId ?? ''),
+      status: body.status === 'failed' ? 'failed' : 'done',
+      insightsId: String(body.insightsId ?? ''),
+      sentiment: String(body.sentiment ?? ''),
+      scoreTotal: Number(body.scoreTotal ?? 0),
+      scoreMax: Number(body.scoreMax ?? 0),
+      model: String(body.model ?? ''),
+      code: String(body.code ?? ''),
+      message: String(body.message ?? ''),
+    };
+  }
   return null;
 }
 
@@ -122,7 +152,8 @@ export function subscribeLive(
     const event = parseLiveEvent(type, (raw as MessageEvent<string>).data);
     if (event) onEvent(event);
   };
-  for (const type of ['segment', 'job', 'recording', 'import']) source.addEventListener(type, handle(type));
+  for (const type of ['segment', 'job', 'recording', 'import', 'insights'])
+    source.addEventListener(type, handle(type));
   source.onopen = () => onState?.('open');
   source.onerror = () => onState?.('error');
   return { close: () => source.close() };

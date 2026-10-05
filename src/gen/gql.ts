@@ -26,6 +26,10 @@ type Documents = {
   '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n': typeof types.RequestImportDocument;
   '\n  query Imports($status: [ImportStatus!], $first: Int, $after: String) {\n    imports(status: $status, first: $first, after: $after) {\n      items {\n        ...ImportFields\n      }\n      hasMore\n    }\n  }\n': typeof types.ImportsDocument;
   '\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n': typeof types.ImportDocument;
+  '\n  fragment InsightsFields on Insights {\n    id\n    transcriptId\n    recordingId\n    transcriptVersion\n    summary\n    intent\n    products\n    sentiment\n    checks {\n      key\n      label\n      answer\n      evidence\n    }\n    scores {\n      key\n      label\n      score\n      max\n      reason\n    }\n    scoreTotal\n    scoreMax\n    model\n    inputTokens\n    outputTokens\n    formVersion\n    createdAt\n  }\n': typeof types.InsightsFieldsFragmentDoc;
+  '\n  query Insights($recordingId: String!) {\n    insights(recordingId: $recordingId) {\n      ...InsightsFields\n    }\n  }\n': typeof types.InsightsDocument;
+  '\n  query InsightsStatus {\n    insightsStatus {\n      enabled\n      model\n      formVersion\n    }\n  }\n': typeof types.InsightsStatusDocument;
+  '\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n': typeof types.AnalyseRecordingDocument;
   '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    callTime\n    createdAt\n    updatedAt\n  }\n': typeof types.RecordingFieldsFragmentDoc;
   '\n  query RecordingFacets($key: String!, $filter: RecordingFilter) {\n    recordingFacets(key: $key, filter: $filter) {\n      value\n      count\n    }\n  }\n': typeof types.RecordingFacetsDocument;
   '\n  fragment JobFields on Job {\n    id\n    recordingId\n    status\n    modelRegistryId\n    languagePolicy\n    force\n    progressSeconds\n    totalSeconds\n    errorCode\n    errorMessage\n    transcriptId\n    createdAt\n    startedAt\n    finishedAt\n  }\n': typeof types.JobFieldsFragmentDoc;
@@ -100,6 +104,14 @@ const documents: Documents = {
     types.ImportsDocument,
   '\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n':
     types.ImportDocument,
+  '\n  fragment InsightsFields on Insights {\n    id\n    transcriptId\n    recordingId\n    transcriptVersion\n    summary\n    intent\n    products\n    sentiment\n    checks {\n      key\n      label\n      answer\n      evidence\n    }\n    scores {\n      key\n      label\n      score\n      max\n      reason\n    }\n    scoreTotal\n    scoreMax\n    model\n    inputTokens\n    outputTokens\n    formVersion\n    createdAt\n  }\n':
+    types.InsightsFieldsFragmentDoc,
+  '\n  query Insights($recordingId: String!) {\n    insights(recordingId: $recordingId) {\n      ...InsightsFields\n    }\n  }\n':
+    types.InsightsDocument,
+  '\n  query InsightsStatus {\n    insightsStatus {\n      enabled\n      model\n      formVersion\n    }\n  }\n':
+    types.InsightsStatusDocument,
+  '\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n':
+    types.AnalyseRecordingDocument,
   '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    callTime\n    createdAt\n    updatedAt\n  }\n':
     types.RecordingFieldsFragmentDoc,
   '\n  query RecordingFacets($key: String!, $filter: RecordingFilter) {\n    recordingFacets(key: $key, filter: $filter) {\n      value\n      count\n    }\n  }\n':
@@ -285,6 +297,30 @@ export function graphql(
 export function graphql(
   source: '\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n',
 ): (typeof documents)['\n  query Import($id: String!) {\n    import(id: $id) {\n      ...ImportFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment InsightsFields on Insights {\n    id\n    transcriptId\n    recordingId\n    transcriptVersion\n    summary\n    intent\n    products\n    sentiment\n    checks {\n      key\n      label\n      answer\n      evidence\n    }\n    scores {\n      key\n      label\n      score\n      max\n      reason\n    }\n    scoreTotal\n    scoreMax\n    model\n    inputTokens\n    outputTokens\n    formVersion\n    createdAt\n  }\n',
+): (typeof documents)['\n  fragment InsightsFields on Insights {\n    id\n    transcriptId\n    recordingId\n    transcriptVersion\n    summary\n    intent\n    products\n    sentiment\n    checks {\n      key\n      label\n      answer\n      evidence\n    }\n    scores {\n      key\n      label\n      score\n      max\n      reason\n    }\n    scoreTotal\n    scoreMax\n    model\n    inputTokens\n    outputTokens\n    formVersion\n    createdAt\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Insights($recordingId: String!) {\n    insights(recordingId: $recordingId) {\n      ...InsightsFields\n    }\n  }\n',
+): (typeof documents)['\n  query Insights($recordingId: String!) {\n    insights(recordingId: $recordingId) {\n      ...InsightsFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query InsightsStatus {\n    insightsStatus {\n      enabled\n      model\n      formVersion\n    }\n  }\n',
+): (typeof documents)['\n  query InsightsStatus {\n    insightsStatus {\n      enabled\n      model\n      formVersion\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

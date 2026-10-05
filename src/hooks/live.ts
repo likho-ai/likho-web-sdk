@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { subscribeLive, type LiveEvent, type LiveSegment } from '../live.js';
+import { subscribeLive, type LiveEvent, type LiveInsights, type LiveSegment } from '../live.js';
 import { useLikho } from '../provider.js';
 import { useRefreshImports } from './imports.js';
+import { useRefreshInsights } from './insights.js';
 import { useRefreshRecordings } from './recordings.js';
 
 export interface JobLive {
@@ -77,6 +78,43 @@ export function useJobLive(jobId: string | undefined | null, enabled = true): Jo
     );
     return () => subscription.close();
   }, [client, jobId, enabled, refresh]);
+
+  return live;
+}
+
+export interface RecordingLive {
+  connection: 'connecting' | 'open' | 'error';
+  /** The last word about the recording's insights: in (done) or not (failed, with why). */
+  insights: LiveInsights | null;
+}
+
+/**
+ * Follows one recording while its page is open: a job or status change refreshes the recording,
+ * the model's answer refreshes its insights. Mount it once on the transcript page.
+ */
+export function useRecordingLive(recordingId: string | undefined | null, enabled = true): RecordingLive {
+  const client = useLikho();
+  const refresh = useRefreshRecordings();
+  const refreshInsights = useRefreshInsights();
+  const [live, setLive] = useState<RecordingLive>({ connection: 'connecting', insights: null });
+
+  useEffect(() => {
+    if (!recordingId || !enabled) return;
+    setLive({ connection: 'connecting', insights: null });
+    const subscription = subscribeLive(
+      client.eventsUrl(`/events/recordings/${recordingId}`),
+      (event) => {
+        if (event.type === 'insights') {
+          setLive((state) => ({ ...state, insights: event }));
+          if (event.status === 'done') refreshInsights(recordingId);
+        } else if (event.type === 'job' || event.type === 'recording') {
+          refresh(recordingId);
+        }
+      },
+      (connection) => setLive((state) => ({ ...state, connection })),
+    );
+    return () => subscription.close();
+  }, [client, recordingId, enabled, refresh, refreshInsights]);
 
   return live;
 }

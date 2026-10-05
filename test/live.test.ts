@@ -1,7 +1,7 @@
 import { parseLiveEvent, subscribeLive } from '../src/live.js';
 
 describe('live events', () => {
-  it('parses the four kinds and ignores the rest', () => {
+  it('parses the five kinds and ignores the rest', () => {
     const segment = {
       jobId: 'job_1',
       recordingId: 'rec_1',
@@ -48,6 +48,44 @@ describe('live events', () => {
     expect(parseLiveEvent('import', JSON.stringify({ id: 'imp_2', status: 'odd' }))).toMatchObject({
       status: 'requested',
     });
+    expect(
+      parseLiveEvent(
+        'insights',
+        JSON.stringify({
+          recordingId: 'rec_1',
+          transcriptId: 'trn_1',
+          status: 'done',
+          insightsId: 'ins_1',
+          sentiment: 'positive',
+          scoreTotal: 16,
+          scoreMax: 20,
+          model: 'fake/one',
+        }),
+      ),
+    ).toEqual({
+      type: 'insights',
+      recordingId: 'rec_1',
+      transcriptId: 'trn_1',
+      status: 'done',
+      insightsId: 'ins_1',
+      sentiment: 'positive',
+      scoreTotal: 16,
+      scoreMax: 20,
+      model: 'fake/one',
+      code: '',
+      message: '',
+    });
+    expect(
+      parseLiveEvent(
+        'insights',
+        JSON.stringify({
+          recordingId: 'rec_1',
+          status: 'failed',
+          code: 'model_error',
+          message: 'rate limited',
+        }),
+      ),
+    ).toMatchObject({ type: 'insights', status: 'failed', code: 'model_error', message: 'rate limited' });
     expect(parseLiveEvent('other', '{}')).toBeNull();
     expect(parseLiveEvent('segment', 'not json')).toBeNull();
   });

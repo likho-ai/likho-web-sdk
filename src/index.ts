@@ -5,6 +5,7 @@ export {
   subscribeLive,
   type LiveEvent,
   type LiveImport,
+  type LiveInsights,
   type LiveJob,
   type LiveRecording,
   type LiveSegment,
@@ -18,6 +19,7 @@ export * from './hooks/live.js';
 export * from './hooks/search.js';
 export * from './hooks/imports.js';
 export * from './hooks/users.js';
+export * from './hooks/insights.js';
 export type {
   AuditFilterInput,
   CorrectSegmentInput,
@@ -47,7 +49,14 @@ export type {
   GlossaryTermFieldsFragment as GlossaryTerm,
   SpellingFieldsFragment as Spelling,
   SavedSearchFieldsFragment as SavedSearch,
+  InsightsFieldsFragment as Insights,
 } from './gen/graphql.js';
+/** One yes/no observation of the auditor's form, answered from the transcript with the line that shows it. */
+export type InsightCheck = import('./gen/graphql.js').InsightsFieldsFragment['checks'][number];
+/** One scored point of the auditor's form, with the reason. */
+export type InsightScore = import('./gen/graphql.js').InsightsFieldsFragment['scores'][number];
+/** Whether insights are made at all (a model is configured) and by which model. */
+export type InsightsStatus = import('./gen/graphql.js').InsightsStatusQuery['insightsStatus'];
 /** One value of a fact about the calls, with how many recordings have it. */
 export type FacetValue = import('./gen/graphql.js').RecordingFacetsQuery['recordingFacets'][number];
 /** One of the last lines a spelling was applied to: before (as the model wrote it) and after (Hinglish). */
