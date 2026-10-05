@@ -22,7 +22,7 @@ export type {
   CreateJobInput,
   GlossaryTermInput,
   ImportStatus,
-  Layer,
+  Layer as CorrectionLayer,
   JobStatus,
   RecordingFilter,
   RecordingStatus,
