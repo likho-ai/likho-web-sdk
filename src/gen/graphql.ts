@@ -59,9 +59,21 @@ export type JobStatus = 'cancelled' | 'done' | 'failed' | 'queued' | 'running';
 export type Layer = 'roman' | 'script';
 
 export type RecordingFilter = {
+  /** The agent attribute, exactly. */
+  agent?: string | null | undefined;
+  /** The campaign attribute, exactly. */
+  campaign?: string | null | undefined;
+  /** The disposition attribute, exactly. */
+  disposition?: string | null | undefined;
   /** Part of the file name or the external id. */
   search?: string | null | undefined;
+  /** Calls from this moment (their call time). */
+  since?: string | null | undefined;
+  /** Where the call came from: upload, api, or a connector’s name. */
+  source?: string | null | undefined;
   status?: Array<RecordingStatus> | null | undefined;
+  /** Calls up to this moment (their call time). */
+  until?: string | null | undefined;
 };
 
 export type RecordingStatus =
@@ -93,13 +105,33 @@ export type RequestUploadInput = {
 /** admin manages people and settings; member works with recordings; viewer reads and searches. */
 export type Role = 'admin' | 'member' | 'viewer';
 
+export type SaveSearchInput = {
+  filter?: SearchFilter | null | undefined;
+  /** A short name, e.g. "refunds, sales, last week". */
+  name: string;
+  /** The words to search for. */
+  query: string;
+};
+
 export type SearchFilter = {
+  /** The agent attribute, exactly. */
+  agent?: string | null | undefined;
+  /** Calls from this moment (their call time). */
+  callSince?: string | null | undefined;
+  /** Calls up to this moment (their call time). */
+  callUntil?: string | null | undefined;
+  /** The campaign attribute, exactly. */
+  campaign?: string | null | undefined;
+  /** The disposition attribute, exactly. */
+  disposition?: string | null | undefined;
   /** A detected language (ISO 639-1). */
   language?: string | null | undefined;
   /** Only this recording. */
   recordingId?: string | null | undefined;
   /** Transcripts created from this moment. */
   since?: string | null | undefined;
+  /** Where the call came from: upload, api, or a connector’s name. */
+  source?: string | null | undefined;
   /** Transcripts created up to this moment. */
   until?: string | null | undefined;
 };
@@ -267,10 +299,18 @@ export type RecordingFieldsFragment = {
   latestTranscriptId: string;
   detectedLanguage: string;
   languageProbability: number;
+  callTime: string;
   createdAt: string;
   updatedAt: string;
   attributes: Array<{ key: string; value: string }>;
 };
+
+export type RecordingFacetsQueryVariables = Exact<{
+  key: string;
+  filter?: RecordingFilter | null | undefined;
+}>;
+
+export type RecordingFacetsQuery = { recordingFacets: Array<{ value: string; count: number }> };
 
 export type JobFieldsFragment = {
   id: string;
@@ -315,6 +355,7 @@ export type RecordingsQuery = {
       latestTranscriptId: string;
       detectedLanguage: string;
       languageProbability: number;
+      callTime: string;
       createdAt: string;
       updatedAt: string;
       jobs: Array<{
@@ -375,6 +416,7 @@ export type RecordingQuery = {
     latestTranscriptId: string;
     detectedLanguage: string;
     languageProbability: number;
+    callTime: string;
     createdAt: string;
     updatedAt: string;
     jobs: Array<{
@@ -421,6 +463,7 @@ export type RequestUploadMutation = {
       latestTranscriptId: string;
       detectedLanguage: string;
       languageProbability: number;
+      callTime: string;
       createdAt: string;
       updatedAt: string;
       attributes: Array<{ key: string; value: string }>;
@@ -544,6 +587,7 @@ export type SearchQuery = {
         latestTranscriptId: string;
         detectedLanguage: string;
         languageProbability: number;
+        callTime: string;
         createdAt: string;
         updatedAt: string;
         attributes: Array<{ key: string; value: string }>;
@@ -551,6 +595,82 @@ export type SearchQuery = {
     }>;
   };
 };
+
+export type SavedSearchFieldsFragment = {
+  id: string;
+  name: string;
+  query: string;
+  createdBy: string | null;
+  createdAt: string;
+  filter: {
+    language: string | null;
+    recordingId: string | null;
+    campaign: string | null;
+    agent: string | null;
+    disposition: string | null;
+    source: string | null;
+    since: string | null;
+    until: string | null;
+    callSince: string | null;
+    callUntil: string | null;
+  };
+};
+
+export type SavedSearchesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type SavedSearchesQuery = {
+  savedSearches: Array<{
+    id: string;
+    name: string;
+    query: string;
+    createdBy: string | null;
+    createdAt: string;
+    filter: {
+      language: string | null;
+      recordingId: string | null;
+      campaign: string | null;
+      agent: string | null;
+      disposition: string | null;
+      source: string | null;
+      since: string | null;
+      until: string | null;
+      callSince: string | null;
+      callUntil: string | null;
+    };
+  }>;
+};
+
+export type SaveSearchMutationVariables = Exact<{
+  input: SaveSearchInput;
+}>;
+
+export type SaveSearchMutation = {
+  saveSearch: {
+    id: string;
+    name: string;
+    query: string;
+    createdBy: string | null;
+    createdAt: string;
+    filter: {
+      language: string | null;
+      recordingId: string | null;
+      campaign: string | null;
+      agent: string | null;
+      disposition: string | null;
+      source: string | null;
+      since: string | null;
+      until: string | null;
+      callSince: string | null;
+      callUntil: string | null;
+    };
+  };
+};
+
+export type DeleteSavedSearchMutationVariables = Exact<{
+  id: string;
+}>;
+
+export type DeleteSavedSearchMutation = { deleteSavedSearch: boolean };
 
 export type TranscriptFieldsFragment = {
   id: string;
@@ -1161,6 +1281,7 @@ export const RecordingFieldsFragmentDoc = {
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
           { kind: 'Field', name: { kind: 'Name', value: 'detectedLanguage' } },
           { kind: 'Field', name: { kind: 'Name', value: 'languageProbability' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'callTime' } },
           { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
           { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
         ],
@@ -1197,6 +1318,45 @@ export const JobFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<JobFieldsFragment, unknown>;
+export const SavedSearchFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SavedSearchFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SavedSearch' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'query' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'filter' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'campaign' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agent' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'disposition' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'since' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'until' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'callSince' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'callUntil' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SavedSearchFieldsFragment, unknown>;
 export const TranscriptFieldsFragmentDoc = {
   kind: 'Document',
   definitions: [
@@ -1879,6 +2039,56 @@ export const ImportDocument = {
     },
   ],
 } as unknown as DocumentNode<ImportQuery, ImportQueryVariables>;
+export const RecordingFacetsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'RecordingFacets' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'key' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'RecordingFilter' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'recordingFacets' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'key' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'key' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'filter' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RecordingFacetsQuery, RecordingFacetsQueryVariables>;
 export const RecordingsDocument = {
   kind: 'Document',
   definitions: [
@@ -1990,6 +2200,7 @@ export const RecordingsDocument = {
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
           { kind: 'Field', name: { kind: 'Name', value: 'detectedLanguage' } },
           { kind: 'Field', name: { kind: 'Name', value: 'languageProbability' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'callTime' } },
           { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
           { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
         ],
@@ -2132,6 +2343,7 @@ export const RecordingDocument = {
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
           { kind: 'Field', name: { kind: 'Name', value: 'detectedLanguage' } },
           { kind: 'Field', name: { kind: 'Name', value: 'languageProbability' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'callTime' } },
           { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
           { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
         ],
@@ -2258,6 +2470,7 @@ export const RequestUploadDocument = {
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
           { kind: 'Field', name: { kind: 'Name', value: 'detectedLanguage' } },
           { kind: 'Field', name: { kind: 'Name', value: 'languageProbability' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'callTime' } },
           { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
           { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
         ],
@@ -2631,6 +2844,7 @@ export const SearchDocument = {
           { kind: 'Field', name: { kind: 'Name', value: 'latestTranscriptId' } },
           { kind: 'Field', name: { kind: 'Name', value: 'detectedLanguage' } },
           { kind: 'Field', name: { kind: 'Name', value: 'languageProbability' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'callTime' } },
           { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
           { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
         ],
@@ -2638,6 +2852,170 @@ export const SearchDocument = {
     },
   ],
 } as unknown as DocumentNode<SearchQuery, SearchQueryVariables>;
+export const SavedSearchesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SavedSearches' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'savedSearches' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SavedSearchFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SavedSearchFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SavedSearch' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'query' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'filter' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'campaign' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agent' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'disposition' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'since' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'until' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'callSince' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'callUntil' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SavedSearchesQuery, SavedSearchesQueryVariables>;
+export const SaveSearchDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'SaveSearch' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'SaveSearchInput' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'saveSearch' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SavedSearchFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SavedSearchFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SavedSearch' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'query' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'filter' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'campaign' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agent' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'disposition' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'since' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'until' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'callSince' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'callUntil' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SaveSearchMutation, SaveSearchMutationVariables>;
+export const DeleteSavedSearchDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'DeleteSavedSearch' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'deleteSavedSearch' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DeleteSavedSearchMutation, DeleteSavedSearchMutationVariables>;
 export const TranscriptDocument = {
   kind: 'Document',
   definitions: [

@@ -32,6 +32,7 @@ export type {
   RequestImportInput,
   RequestUploadInput,
   Role,
+  SaveSearchInput,
   SearchFilter,
   SpellingInput,
 } from './gen/graphql.js';
@@ -45,7 +46,10 @@ export type {
   InvitationFieldsFragment as Invitation,
   GlossaryTermFieldsFragment as GlossaryTerm,
   SpellingFieldsFragment as Spelling,
+  SavedSearchFieldsFragment as SavedSearch,
 } from './gen/graphql.js';
+/** One value of a fact about the calls, with how many recordings have it. */
+export type FacetValue = import('./gen/graphql.js').RecordingFacetsQuery['recordingFacets'][number];
 /** One of the last lines a spelling was applied to: before (as the model wrote it) and after (Hinglish). */
 export type SpellingExample = import('./gen/graphql.js').SpellingFieldsFragment['examples'][number];
 /** What a CSV import did. */

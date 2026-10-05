@@ -8,6 +8,7 @@ import {
   DeleteRecordingMutation,
   JobsQuery,
   RecordingCountsQuery,
+  RecordingFacetsQuery,
   RecordingQuery,
   RecordingsQuery,
   RequestUploadMutation,
@@ -19,9 +20,27 @@ export const recordingKeys = {
   list: (filter: RecordingFilter | undefined, first: number) =>
     ['recordings', 'list', filter ?? {}, first] as const,
   counts: ['recordings', 'counts'] as const,
+  facets: (key: string, filter: RecordingFilter | undefined) =>
+    ['recordings', 'facets', key, filter ?? {}] as const,
   one: (id: string) => ['recordings', 'one', id] as const,
   jobs: (recordingId?: string) => ['jobs', recordingId ?? 'all'] as const,
 };
+
+/** The facts a library or a search can be narrowed by. */
+export type FacetKey = 'campaign' | 'agent' | 'disposition' | 'source';
+
+/**
+ * The values one fact takes across the recordings (campaign, agent, disposition or source), most
+ * common first with counts, narrowed by the same filter as the list: what a filter dropdown shows.
+ */
+export function useRecordingFacets(key: FacetKey, filter?: RecordingFilter) {
+  const client = useLikho();
+  return useQuery({
+    queryKey: recordingKeys.facets(key, filter),
+    queryFn: async () => (await client.request(RecordingFacetsQuery, { key, filter })).recordingFacets,
+    staleTime: 30_000,
+  });
+}
 
 /** The recordings of the workspace, newest first, page by page. */
 export function useRecordings(filter?: RecordingFilter, first = 50) {

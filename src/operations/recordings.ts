@@ -21,8 +21,18 @@ export const RecordingFields = graphql(`
     latestTranscriptId
     detectedLanguage
     languageProbability
+    callTime
     createdAt
     updatedAt
+  }
+`);
+
+export const RecordingFacetsQuery = graphql(`
+  query RecordingFacets($key: String!, $filter: RecordingFilter) {
+    recordingFacets(key: $key, filter: $filter) {
+      value
+      count
+    }
   }
 `);
 
