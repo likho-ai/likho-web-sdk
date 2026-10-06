@@ -21,6 +21,7 @@ export * from './hooks/imports.js';
 export * from './hooks/users.js';
 export * from './hooks/insights.js';
 export * from './hooks/analytics.js';
+export * from './hooks/dialer.js';
 export type {
   AnalyticsBucket,
   AnalyticsDimension,
@@ -29,6 +30,8 @@ export type {
   AuditFilterInput,
   CorrectSegmentInput,
   CreateJobInput,
+  DialerCallsFilter,
+  DialerSettingsInput,
   GlossaryTermInput,
   ImportStatus,
   InviteUserInput,
@@ -41,6 +44,7 @@ export type {
   Role,
   SaveSearchInput,
   SearchFilter,
+  SettingsInput,
   SpellingInput,
 } from './gen/graphql.js';
 export type {
@@ -62,6 +66,18 @@ export type InsightCheck = import('./gen/graphql.js').InsightsFieldsFragment['ch
 export type InsightScore = import('./gen/graphql.js').InsightsFieldsFragment['scores'][number];
 /** Whether insights are made at all (a model is configured) and by which model. */
 export type InsightsStatus = import('./gen/graphql.js').InsightsStatusQuery['insightsStatus'];
+/** A campaign of the dialer with its calls in a window. */
+export type DialerCampaign = import('./gen/graphql.js').DialerCampaignsQuery['dialerCampaigns'][number];
+/** An agent of the dialer with the calls taken in a window. */
+export type DialerAgent = import('./gen/graphql.js').DialerAgentsQuery['dialerAgents'][number];
+/** One leg of a call as the dialer logged it, with its recording when Likho has it. */
+export type DialerCall = import('./gen/graphql.js').DialerCallsQuery['dialerCalls']['items'][number];
+/** What the dialer connector is doing. */
+export type DialerStatus = import('./gen/graphql.js').DialerStatusQuery['dialerStatus'];
+/** Every setting of the workspace. */
+export type WorkspaceSettings = import('./gen/graphql.js').SettingsQuery['settings'];
+/** Whether each service answers. */
+export type SystemStatus = import('./gen/graphql.js').SystemStatusQuery['systemStatus'];
 /** What happened to the calls in a window. */
 export type AnalyticsOverview = import('./gen/graphql.js').AnalyticsOverviewQuery['analyticsOverview'];
 /** One bucket of a timeseries. */

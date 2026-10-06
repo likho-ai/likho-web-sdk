@@ -55,6 +55,29 @@ export type CreateJobInput = {
   recordingId: string;
 };
 
+/** Which calls of the dialer; since and until are required. */
+export type DialerCallsFilter = {
+  agent?: string | null | undefined;
+  campaign?: string | null | undefined;
+  /** Only calls that connected (default true). */
+  connectedOnly?: boolean | null | undefined;
+  /** Only calls with at least this much talk time. */
+  minTalkSeconds?: number | null | undefined;
+  since: string;
+  until: string;
+};
+
+export type DialerSettingsInput = {
+  batchLimit?: number | null | undefined;
+  campaigns?: Array<string> | null | undefined;
+  dailyLimit?: number | null | undefined;
+  minTalkSeconds?: number | null | undefined;
+  phoneDigits?: number | null | undefined;
+  pollIntervalSeconds?: number | null | undefined;
+  scheduleEnabled?: boolean | null | undefined;
+  writebackEnabled?: boolean | null | undefined;
+};
+
 export type GlossaryTermInput = {
   enabled?: boolean | null | undefined;
   /** Empty: a new term, or the one with the same text. */
@@ -157,6 +180,12 @@ export type SearchFilter = {
   until?: string | null | undefined;
 };
 
+/** The settings to change; a field left out keeps its value. */
+export type SettingsInput = {
+  autoTranscribe?: boolean | null | undefined;
+  dialer?: DialerSettingsInput | null | undefined;
+};
+
 export type SpellingInput = {
   enabled?: boolean | null | undefined;
   id?: string | null | undefined;
@@ -197,13 +226,41 @@ export type LogoutMutation = { logout: boolean };
 
 export type SettingsQueryVariables = Exact<{ [key: string]: never }>;
 
-export type SettingsQuery = { settings: { autoTranscribe: boolean } };
+export type SettingsQuery = {
+  settings: {
+    autoTranscribe: boolean;
+    dialer: {
+      scheduleEnabled: boolean;
+      campaigns: Array<string>;
+      minTalkSeconds: number;
+      dailyLimit: number;
+      batchLimit: number;
+      pollIntervalSeconds: number;
+      phoneDigits: number;
+      writebackEnabled: boolean;
+    };
+  };
+};
 
 export type UpdateSettingsMutationVariables = Exact<{
-  autoTranscribe: boolean;
+  input: SettingsInput;
 }>;
 
-export type UpdateSettingsMutation = { updateSettings: { autoTranscribe: boolean } };
+export type UpdateSettingsMutation = {
+  updateSettings: {
+    autoTranscribe: boolean;
+    dialer: {
+      scheduleEnabled: boolean;
+      campaigns: Array<string>;
+      minTalkSeconds: number;
+      dailyLimit: number;
+      batchLimit: number;
+      pollIntervalSeconds: number;
+      phoneDigits: number;
+      writebackEnabled: boolean;
+    };
+  };
+};
 
 export type ApiKeysQueryVariables = Exact<{ [key: string]: never }>;
 
@@ -228,6 +285,16 @@ export type RevokeApiKeyMutationVariables = Exact<{
 }>;
 
 export type RevokeApiKeyMutation = { revokeApiKey: boolean };
+
+export type SystemStatusQueryVariables = Exact<{ [key: string]: never }>;
+
+export type SystemStatusQuery = {
+  systemStatus: {
+    version: string;
+    checkedAt: string;
+    services: Array<{ name: string; address: string; ok: boolean; detail: string; latencyMs: number }>;
+  };
+};
 
 export type AnalyticsOverviewQueryVariables = Exact<{
   since: string;
@@ -277,6 +344,88 @@ export type AnalyticsBreakdownQuery = {
     score: number;
     negative: number;
   }>;
+};
+
+export type DialerCampaignsQueryVariables = Exact<{
+  since: string;
+  until: string;
+}>;
+
+export type DialerCampaignsQuery = {
+  dialerCampaigns: Array<{
+    name: string;
+    calls: number;
+    connected: number;
+    interactions: number;
+    talkSeconds: number;
+  }>;
+};
+
+export type DialerAgentsQueryVariables = Exact<{
+  since: string;
+  until: string;
+  campaign?: string | null | undefined;
+}>;
+
+export type DialerAgentsQuery = {
+  dialerAgents: Array<{ id: string; name: string; calls: number; connected: number; talkSeconds: number }>;
+};
+
+export type DialerCallsQueryVariables = Exact<{
+  filter: DialerCallsFilter;
+  first?: number | null | undefined;
+  after?: string | null | undefined;
+}>;
+
+export type DialerCallsQuery = {
+  dialerCalls: {
+    nextCursor: string | null;
+    items: Array<{
+      crtObjectId: string;
+      callId: string;
+      callTime: string;
+      campaign: string;
+      transferredCampaign: string;
+      agent: string;
+      agentId: string;
+      disposition: string;
+      callType: string;
+      connected: boolean;
+      talkSeconds: number;
+      phone: string;
+      hangupBy: string;
+      queue: string;
+      recordingId: string | null;
+      recordingStatus: string | null;
+    }>;
+  };
+};
+
+export type DialerStatusQueryVariables = Exact<{ [key: string]: never }>;
+
+export type DialerStatusQuery = {
+  dialerStatus: {
+    databaseConfigured: boolean;
+    scheduleEnabled: boolean;
+    cursor: string;
+    importedToday: number;
+    dailyLimit: number;
+    campaigns: Array<string>;
+    minTalkSeconds: number;
+    writebackEnabled: boolean;
+    archiveEnabled: boolean;
+    version: string;
+    lastRunAt: string | null;
+    lastRunSummary: string;
+  };
+};
+
+export type RequestImportsMutationVariables = Exact<{
+  externalIds: Array<string> | string;
+}>;
+
+export type RequestImportsMutation = {
+  requestImports: Array<{ id: string; externalId: string; status: ImportStatus }>;
 };
 
 export type ImportFieldsFragment = {
@@ -1939,7 +2088,26 @@ export const SettingsDocument = {
             name: { kind: 'Name', value: 'settings' },
             selectionSet: {
               kind: 'SelectionSet',
-              selections: [{ kind: 'Field', name: { kind: 'Name', value: 'autoTranscribe' } }],
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'autoTranscribe' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'dialer' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'scheduleEnabled' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'campaigns' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'minTalkSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'dailyLimit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'batchLimit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'pollIntervalSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'phoneDigits' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'writebackEnabled' } },
+                    ],
+                  },
+                },
+              ],
             },
           },
         ],
@@ -1957,10 +2125,10 @@ export const UpdateSettingsDocument = {
       variableDefinitions: [
         {
           kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'autoTranscribe' } },
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
           type: {
             kind: 'NonNullType',
-            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'SettingsInput' } },
           },
         },
       ],
@@ -1973,13 +2141,32 @@ export const UpdateSettingsDocument = {
             arguments: [
               {
                 kind: 'Argument',
-                name: { kind: 'Name', value: 'autoTranscribe' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'autoTranscribe' } },
+                name: { kind: 'Name', value: 'input' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
               },
             ],
             selectionSet: {
               kind: 'SelectionSet',
-              selections: [{ kind: 'Field', name: { kind: 'Name', value: 'autoTranscribe' } }],
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'autoTranscribe' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'dialer' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'scheduleEnabled' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'campaigns' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'minTalkSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'dailyLimit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'batchLimit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'pollIntervalSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'phoneDigits' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'writebackEnabled' } },
+                    ],
+                  },
+                },
+              ],
             },
           },
         ],
@@ -2089,6 +2276,46 @@ export const RevokeApiKeyDocument = {
     },
   ],
 } as unknown as DocumentNode<RevokeApiKeyMutation, RevokeApiKeyMutationVariables>;
+export const SystemStatusDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SystemStatus' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'systemStatus' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'checkedAt' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'services' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'address' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ok' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'detail' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'latencyMs' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SystemStatusQuery, SystemStatusQueryVariables>;
 export const AnalyticsOverviewDocument = {
   kind: 'Document',
   definitions: [
@@ -2365,6 +2592,307 @@ export const AnalyticsBreakdownDocument = {
     },
   ],
 } as unknown as DocumentNode<AnalyticsBreakdownQuery, AnalyticsBreakdownQueryVariables>;
+export const DialerCampaignsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'DialerCampaigns' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dialerCampaigns' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'since' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'until' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'calls' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'connected' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'interactions' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'talkSeconds' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DialerCampaignsQuery, DialerCampaignsQueryVariables>;
+export const DialerAgentsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'DialerAgents' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'campaign' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dialerAgents' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'since' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'since' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'until' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'until' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'campaign' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'campaign' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'calls' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'connected' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'talkSeconds' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DialerAgentsQuery, DialerAgentsQueryVariables>;
+export const DialerCallsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'DialerCalls' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'DialerCallsFilter' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dialerCalls' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'filter' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'after' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'items' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'crtObjectId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'callId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'callTime' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'campaign' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'transferredCampaign' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'agent' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'disposition' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'callType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'connected' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'talkSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'phone' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'hangupBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'queue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'recordingStatus' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'nextCursor' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DialerCallsQuery, DialerCallsQueryVariables>;
+export const DialerStatusDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'DialerStatus' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dialerStatus' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'databaseConfigured' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'scheduleEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'cursor' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'importedToday' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dailyLimit' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'campaigns' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'minTalkSeconds' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'writebackEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'archiveEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastRunAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastRunSummary' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DialerStatusQuery, DialerStatusQueryVariables>;
+export const RequestImportsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'RequestImports' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'externalIds' } },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'ListType',
+              type: {
+                kind: 'NonNullType',
+                type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+              },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'requestImports' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'externalIds' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'externalIds' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RequestImportsMutation, RequestImportsMutationVariables>;
 export const RequestImportDocument = {
   kind: 'Document',
   definitions: [

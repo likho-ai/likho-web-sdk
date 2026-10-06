@@ -8,8 +8,10 @@ import {
   MeQuery,
   RevokeApiKeyMutation,
   SettingsQuery,
+  SystemStatusQuery,
   UpdateSettingsMutation,
 } from '../operations/account.js';
+import type { SettingsInput } from '../gen/graphql.js';
 import { useLikho } from '../provider.js';
 
 export const accountKeys = {
@@ -70,8 +72,19 @@ export function useUpdateSettings() {
   const client = useLikho();
   const queries = useQueryClient();
   return useMutation({
-    mutationFn: (input: { autoTranscribe: boolean }) => client.request(UpdateSettingsMutation, input),
+    mutationFn: (input: SettingsInput) => client.request(UpdateSettingsMutation, { input }),
     onSuccess: (data) => queries.setQueryData(accountKeys.settings, data.updateSettings),
+  });
+}
+
+/** Whether every service of the platform answers right now (admins). Checked again every 30 s. */
+export function useSystemStatus(enabled = true) {
+  const client = useLikho();
+  return useQuery({
+    queryKey: ['system', 'status'] as const,
+    queryFn: async () => (await client.request(SystemStatusQuery)).systemStatus,
+    enabled,
+    refetchInterval: 30_000,
   });
 }
 

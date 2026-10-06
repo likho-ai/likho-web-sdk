@@ -17,14 +17,20 @@ type Documents = {
   '\n  query Me {\n    me {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n': typeof types.MeDocument;
   '\n  mutation Login($email: String!, $password: String!) {\n    login(email: $email, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n': typeof types.LoginDocument;
   '\n  mutation Logout {\n    logout\n  }\n': typeof types.LogoutDocument;
-  '\n  query Settings {\n    settings {\n      autoTranscribe\n    }\n  }\n': typeof types.SettingsDocument;
-  '\n  mutation UpdateSettings($autoTranscribe: Boolean!) {\n    updateSettings(autoTranscribe: $autoTranscribe) {\n      autoTranscribe\n    }\n  }\n': typeof types.UpdateSettingsDocument;
+  '\n  query Settings {\n    settings {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n': typeof types.SettingsDocument;
+  '\n  mutation UpdateSettings($input: SettingsInput!) {\n    updateSettings(input: $input) {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n': typeof types.UpdateSettingsDocument;
   '\n  query ApiKeys {\n    apiKeys {\n      id\n      name\n      createdAt\n      lastUsedAt\n      revokedAt\n    }\n  }\n': typeof types.ApiKeysDocument;
   '\n  mutation CreateApiKey($name: String!) {\n    createApiKey(name: $name) {\n      id\n      key\n    }\n  }\n': typeof types.CreateApiKeyDocument;
   '\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n': typeof types.RevokeApiKeyDocument;
+  '\n  query SystemStatus {\n    systemStatus {\n      version\n      checkedAt\n      services {\n        name\n        address\n        ok\n        detail\n        latencyMs\n      }\n    }\n  }\n': typeof types.SystemStatusDocument;
   '\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n': typeof types.AnalyticsOverviewDocument;
   '\n  query AnalyticsTimeseries(\n    $metric: AnalyticsMetric!\n    $bucket: AnalyticsBucket\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n  ) {\n    analyticsTimeseries(metric: $metric, bucket: $bucket, since: $since, until: $until, facts: $facts) {\n      at\n      value\n    }\n  }\n': typeof types.AnalyticsTimeseriesDocument;
   '\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n': typeof types.AnalyticsBreakdownDocument;
+  '\n  query DialerCampaigns($since: DateTime!, $until: DateTime!) {\n    dialerCampaigns(since: $since, until: $until) {\n      name\n      calls\n      connected\n      interactions\n      talkSeconds\n    }\n  }\n': typeof types.DialerCampaignsDocument;
+  '\n  query DialerAgents($since: DateTime!, $until: DateTime!, $campaign: String) {\n    dialerAgents(since: $since, until: $until, campaign: $campaign) {\n      id\n      name\n      calls\n      connected\n      talkSeconds\n    }\n  }\n': typeof types.DialerAgentsDocument;
+  '\n  query DialerCalls($filter: DialerCallsFilter!, $first: Int, $after: String) {\n    dialerCalls(filter: $filter, first: $first, after: $after) {\n      items {\n        crtObjectId\n        callId\n        callTime\n        campaign\n        transferredCampaign\n        agent\n        agentId\n        disposition\n        callType\n        connected\n        talkSeconds\n        phone\n        hangupBy\n        queue\n        recordingId\n        recordingStatus\n      }\n      nextCursor\n    }\n  }\n': typeof types.DialerCallsDocument;
+  '\n  query DialerStatus {\n    dialerStatus {\n      databaseConfigured\n      scheduleEnabled\n      cursor\n      importedToday\n      dailyLimit\n      campaigns\n      minTalkSeconds\n      writebackEnabled\n      archiveEnabled\n      version\n      lastRunAt\n      lastRunSummary\n    }\n  }\n': typeof types.DialerStatusDocument;
+  '\n  mutation RequestImports($externalIds: [String!]!) {\n    requestImports(externalIds: $externalIds) {\n      id\n      externalId\n      status\n    }\n  }\n': typeof types.RequestImportsDocument;
   '\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n': typeof types.ImportFieldsFragmentDoc;
   '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n': typeof types.RequestImportDocument;
   '\n  query Imports($status: [ImportStatus!], $first: Int, $after: String) {\n    imports(status: $status, first: $first, after: $after) {\n      items {\n        ...ImportFields\n      }\n      hasMore\n    }\n  }\n': typeof types.ImportsDocument;
@@ -92,20 +98,33 @@ const documents: Documents = {
   '\n  mutation Login($email: String!, $password: String!) {\n    login(email: $email, password: $password) {\n      id\n      email\n      name\n      role\n      workspace {\n        id\n        name\n      }\n    }\n  }\n':
     types.LoginDocument,
   '\n  mutation Logout {\n    logout\n  }\n': types.LogoutDocument,
-  '\n  query Settings {\n    settings {\n      autoTranscribe\n    }\n  }\n': types.SettingsDocument,
-  '\n  mutation UpdateSettings($autoTranscribe: Boolean!) {\n    updateSettings(autoTranscribe: $autoTranscribe) {\n      autoTranscribe\n    }\n  }\n':
+  '\n  query Settings {\n    settings {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n':
+    types.SettingsDocument,
+  '\n  mutation UpdateSettings($input: SettingsInput!) {\n    updateSettings(input: $input) {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n':
     types.UpdateSettingsDocument,
   '\n  query ApiKeys {\n    apiKeys {\n      id\n      name\n      createdAt\n      lastUsedAt\n      revokedAt\n    }\n  }\n':
     types.ApiKeysDocument,
   '\n  mutation CreateApiKey($name: String!) {\n    createApiKey(name: $name) {\n      id\n      key\n    }\n  }\n':
     types.CreateApiKeyDocument,
   '\n  mutation RevokeApiKey($id: String!) {\n    revokeApiKey(id: $id)\n  }\n': types.RevokeApiKeyDocument,
+  '\n  query SystemStatus {\n    systemStatus {\n      version\n      checkedAt\n      services {\n        name\n        address\n        ok\n        detail\n        latencyMs\n      }\n    }\n  }\n':
+    types.SystemStatusDocument,
   '\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n':
     types.AnalyticsOverviewDocument,
   '\n  query AnalyticsTimeseries(\n    $metric: AnalyticsMetric!\n    $bucket: AnalyticsBucket\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n  ) {\n    analyticsTimeseries(metric: $metric, bucket: $bucket, since: $since, until: $until, facts: $facts) {\n      at\n      value\n    }\n  }\n':
     types.AnalyticsTimeseriesDocument,
   '\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n':
     types.AnalyticsBreakdownDocument,
+  '\n  query DialerCampaigns($since: DateTime!, $until: DateTime!) {\n    dialerCampaigns(since: $since, until: $until) {\n      name\n      calls\n      connected\n      interactions\n      talkSeconds\n    }\n  }\n':
+    types.DialerCampaignsDocument,
+  '\n  query DialerAgents($since: DateTime!, $until: DateTime!, $campaign: String) {\n    dialerAgents(since: $since, until: $until, campaign: $campaign) {\n      id\n      name\n      calls\n      connected\n      talkSeconds\n    }\n  }\n':
+    types.DialerAgentsDocument,
+  '\n  query DialerCalls($filter: DialerCallsFilter!, $first: Int, $after: String) {\n    dialerCalls(filter: $filter, first: $first, after: $after) {\n      items {\n        crtObjectId\n        callId\n        callTime\n        campaign\n        transferredCampaign\n        agent\n        agentId\n        disposition\n        callType\n        connected\n        talkSeconds\n        phone\n        hangupBy\n        queue\n        recordingId\n        recordingStatus\n      }\n      nextCursor\n    }\n  }\n':
+    types.DialerCallsDocument,
+  '\n  query DialerStatus {\n    dialerStatus {\n      databaseConfigured\n      scheduleEnabled\n      cursor\n      importedToday\n      dailyLimit\n      campaigns\n      minTalkSeconds\n      writebackEnabled\n      archiveEnabled\n      version\n      lastRunAt\n      lastRunSummary\n    }\n  }\n':
+    types.DialerStatusDocument,
+  '\n  mutation RequestImports($externalIds: [String!]!) {\n    requestImports(externalIds: $externalIds) {\n      id\n      externalId\n      status\n    }\n  }\n':
+    types.RequestImportsDocument,
   '\n  fragment ImportFields on Import {\n    id\n    source\n    externalId\n    transcribe\n    status\n    recordingId\n    reason\n    code\n    createdAt\n    updatedAt\n  }\n':
     types.ImportFieldsFragmentDoc,
   '\n  mutation RequestImport($input: RequestImportInput!) {\n    requestImport(input: $input) {\n      ...ImportFields\n    }\n  }\n':
@@ -259,14 +278,14 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  query Settings {\n    settings {\n      autoTranscribe\n    }\n  }\n',
-): (typeof documents)['\n  query Settings {\n    settings {\n      autoTranscribe\n    }\n  }\n'];
+  source: '\n  query Settings {\n    settings {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query Settings {\n    settings {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  mutation UpdateSettings($autoTranscribe: Boolean!) {\n    updateSettings(autoTranscribe: $autoTranscribe) {\n      autoTranscribe\n    }\n  }\n',
-): (typeof documents)['\n  mutation UpdateSettings($autoTranscribe: Boolean!) {\n    updateSettings(autoTranscribe: $autoTranscribe) {\n      autoTranscribe\n    }\n  }\n'];
+  source: '\n  mutation UpdateSettings($input: SettingsInput!) {\n    updateSettings(input: $input) {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n',
+): (typeof documents)['\n  mutation UpdateSettings($input: SettingsInput!) {\n    updateSettings(input: $input) {\n      autoTranscribe\n      dialer {\n        scheduleEnabled\n        campaigns\n        minTalkSeconds\n        dailyLimit\n        batchLimit\n        pollIntervalSeconds\n        phoneDigits\n        writebackEnabled\n      }\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -289,6 +308,12 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
+  source: '\n  query SystemStatus {\n    systemStatus {\n      version\n      checkedAt\n      services {\n        name\n        address\n        ok\n        detail\n        latencyMs\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query SystemStatus {\n    systemStatus {\n      version\n      checkedAt\n      services {\n        name\n        address\n        ok\n        detail\n        latencyMs\n      }\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
   source: '\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n',
 ): (typeof documents)['\n  query AnalyticsOverview($since: DateTime!, $until: DateTime!, $facts: AnalyticsFacts) {\n    analyticsOverview(since: $since, until: $until, facts: $facts) {\n      calls\n      transcribed\n      failed\n      minutes\n      realtimeFactor\n      analysed\n      score\n      sentiments {\n        key\n        count\n      }\n      languages {\n        key\n        count\n      }\n    }\n  }\n'];
 /**
@@ -303,6 +328,36 @@ export function graphql(
 export function graphql(
   source: '\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n',
 ): (typeof documents)['\n  query AnalyticsBreakdown(\n    $by: AnalyticsDimension!\n    $since: DateTime!\n    $until: DateTime!\n    $facts: AnalyticsFacts\n    $limit: Int\n  ) {\n    analyticsBreakdown(by: $by, since: $since, until: $until, facts: $facts, limit: $limit) {\n      key\n      calls\n      transcribed\n      minutes\n      analysed\n      score\n      negative\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query DialerCampaigns($since: DateTime!, $until: DateTime!) {\n    dialerCampaigns(since: $since, until: $until) {\n      name\n      calls\n      connected\n      interactions\n      talkSeconds\n    }\n  }\n',
+): (typeof documents)['\n  query DialerCampaigns($since: DateTime!, $until: DateTime!) {\n    dialerCampaigns(since: $since, until: $until) {\n      name\n      calls\n      connected\n      interactions\n      talkSeconds\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query DialerAgents($since: DateTime!, $until: DateTime!, $campaign: String) {\n    dialerAgents(since: $since, until: $until, campaign: $campaign) {\n      id\n      name\n      calls\n      connected\n      talkSeconds\n    }\n  }\n',
+): (typeof documents)['\n  query DialerAgents($since: DateTime!, $until: DateTime!, $campaign: String) {\n    dialerAgents(since: $since, until: $until, campaign: $campaign) {\n      id\n      name\n      calls\n      connected\n      talkSeconds\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query DialerCalls($filter: DialerCallsFilter!, $first: Int, $after: String) {\n    dialerCalls(filter: $filter, first: $first, after: $after) {\n      items {\n        crtObjectId\n        callId\n        callTime\n        campaign\n        transferredCampaign\n        agent\n        agentId\n        disposition\n        callType\n        connected\n        talkSeconds\n        phone\n        hangupBy\n        queue\n        recordingId\n        recordingStatus\n      }\n      nextCursor\n    }\n  }\n',
+): (typeof documents)['\n  query DialerCalls($filter: DialerCallsFilter!, $first: Int, $after: String) {\n    dialerCalls(filter: $filter, first: $first, after: $after) {\n      items {\n        crtObjectId\n        callId\n        callTime\n        campaign\n        transferredCampaign\n        agent\n        agentId\n        disposition\n        callType\n        connected\n        talkSeconds\n        phone\n        hangupBy\n        queue\n        recordingId\n        recordingStatus\n      }\n      nextCursor\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query DialerStatus {\n    dialerStatus {\n      databaseConfigured\n      scheduleEnabled\n      cursor\n      importedToday\n      dailyLimit\n      campaigns\n      minTalkSeconds\n      writebackEnabled\n      archiveEnabled\n      version\n      lastRunAt\n      lastRunSummary\n    }\n  }\n',
+): (typeof documents)['\n  query DialerStatus {\n    dialerStatus {\n      databaseConfigured\n      scheduleEnabled\n      cursor\n      importedToday\n      dailyLimit\n      campaigns\n      minTalkSeconds\n      writebackEnabled\n      archiveEnabled\n      version\n      lastRunAt\n      lastRunSummary\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation RequestImports($externalIds: [String!]!) {\n    requestImports(externalIds: $externalIds) {\n      id\n      externalId\n      status\n    }\n  }\n',
+): (typeof documents)['\n  mutation RequestImports($externalIds: [String!]!) {\n    requestImports(externalIds: $externalIds) {\n      id\n      externalId\n      status\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

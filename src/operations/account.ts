@@ -40,14 +40,34 @@ export const SettingsQuery = graphql(`
   query Settings {
     settings {
       autoTranscribe
+      dialer {
+        scheduleEnabled
+        campaigns
+        minTalkSeconds
+        dailyLimit
+        batchLimit
+        pollIntervalSeconds
+        phoneDigits
+        writebackEnabled
+      }
     }
   }
 `);
 
 export const UpdateSettingsMutation = graphql(`
-  mutation UpdateSettings($autoTranscribe: Boolean!) {
-    updateSettings(autoTranscribe: $autoTranscribe) {
+  mutation UpdateSettings($input: SettingsInput!) {
+    updateSettings(input: $input) {
       autoTranscribe
+      dialer {
+        scheduleEnabled
+        campaigns
+        minTalkSeconds
+        dailyLimit
+        batchLimit
+        pollIntervalSeconds
+        phoneDigits
+        writebackEnabled
+      }
     }
   }
 `);
@@ -76,5 +96,21 @@ export const CreateApiKeyMutation = graphql(`
 export const RevokeApiKeyMutation = graphql(`
   mutation RevokeApiKey($id: String!) {
     revokeApiKey(id: $id)
+  }
+`);
+
+export const SystemStatusQuery = graphql(`
+  query SystemStatus {
+    systemStatus {
+      version
+      checkedAt
+      services {
+        name
+        address
+        ok
+        detail
+        latencyMs
+      }
+    }
   }
 `);
