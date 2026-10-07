@@ -123,6 +123,16 @@ export type RecordingFilter = {
 export type RecordingStatus =
   'done' | 'failed' | 'queued' | 'ready' | 'transcribing' | 'uploaded' | 'uploading';
 
+export type RegisterSpeechModelInput = {
+  /** s3://likho-models/... for a fine-tuned model. */
+  artifactUri?: string | null | undefined;
+  baseModelId?: string | null | undefined;
+  description?: string | null | undefined;
+  languages?: Array<string> | null | undefined;
+  /** <engine>/<name>, e.g. faster-whisper/likho-2026-10. */
+  registryId: string;
+};
+
 export type RequestImportInput = {
   /** The call’s id in the dialer (its crt_object_id). */
   externalId: string;
@@ -632,6 +642,252 @@ export type AnalyseRecordingMutation = {
     createdAt: string | null;
     checks: Array<{ key: string; label: string; answer: string; evidence: string }>;
     scores: Array<{ key: string; label: string; score: number; max: number; reason: string }>;
+  };
+};
+
+export type ErrorRatesFieldsFragment = {
+  werScript: number;
+  cerScript: number;
+  werRoman: number;
+  cerRoman: number;
+};
+
+export type SpeechModelFieldsFragment = {
+  id: string;
+  registryId: string;
+  engine: string;
+  name: string;
+  description: string;
+  languages: Array<string>;
+  artifactUri: string;
+  baseModelId: string;
+  status: string;
+  isDefault: boolean;
+  latestEvaluationId: string | null;
+  createdAt: string | null;
+  latestScores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number } | null;
+};
+
+export type EvaluationFieldsFragment = {
+  id: string;
+  modelId: string;
+  registryId: string;
+  status: string;
+  itemsTotal: number;
+  itemsDone: number;
+  audioSeconds: number;
+  realtimeFactor: number;
+  error: string;
+  startedBy: string;
+  createdAt: string | null;
+  finishedAt: string | null;
+  scores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number };
+};
+
+export type SpeechModelsQueryVariables = Exact<{
+  includeRetired?: boolean | null | undefined;
+}>;
+
+export type SpeechModelsQuery = {
+  speechModels: Array<{
+    id: string;
+    registryId: string;
+    engine: string;
+    name: string;
+    description: string;
+    languages: Array<string>;
+    artifactUri: string;
+    baseModelId: string;
+    status: string;
+    isDefault: boolean;
+    latestEvaluationId: string | null;
+    createdAt: string | null;
+    latestScores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number } | null;
+  }>;
+};
+
+export type GoldSetQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GoldSetQuery = {
+  goldSet: {
+    audioSeconds: number;
+    items: Array<{
+      recordingId: string;
+      transcriptId: string;
+      transcriptVersion: number;
+      language: string;
+      audioSeconds: number;
+      lines: number;
+      addedBy: string;
+      addedAt: string | null;
+    }>;
+  };
+};
+
+export type EvaluationsQueryVariables = Exact<{
+  modelId?: string | null | undefined;
+  first?: number | null | undefined;
+}>;
+
+export type EvaluationsQuery = {
+  evaluations: Array<{
+    id: string;
+    modelId: string;
+    registryId: string;
+    status: string;
+    itemsTotal: number;
+    itemsDone: number;
+    audioSeconds: number;
+    realtimeFactor: number;
+    error: string;
+    startedBy: string;
+    createdAt: string | null;
+    finishedAt: string | null;
+    scores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number };
+  }>;
+};
+
+export type EvaluationQueryVariables = Exact<{
+  id: string;
+}>;
+
+export type EvaluationQuery = {
+  evaluation: {
+    id: string;
+    modelId: string;
+    registryId: string;
+    status: string;
+    itemsTotal: number;
+    itemsDone: number;
+    audioSeconds: number;
+    realtimeFactor: number;
+    error: string;
+    startedBy: string;
+    createdAt: string | null;
+    finishedAt: string | null;
+    items: Array<{
+      recordingId: string;
+      words: number;
+      audioSeconds: number;
+      error: string;
+      scores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number };
+    }>;
+    scores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number };
+  };
+};
+
+export type TrainingStatsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type TrainingStatsQuery = {
+  trainingStats: {
+    examples: number;
+    scriptExamples: number;
+    romanExamples: number;
+    recordings: number;
+    audioSeconds: number;
+    lastExampleAt: string | null;
+  };
+};
+
+export type SetDefaultSpeechModelMutationVariables = Exact<{
+  id: string;
+}>;
+
+export type SetDefaultSpeechModelMutation = {
+  setDefaultSpeechModel: {
+    id: string;
+    registryId: string;
+    engine: string;
+    name: string;
+    description: string;
+    languages: Array<string>;
+    artifactUri: string;
+    baseModelId: string;
+    status: string;
+    isDefault: boolean;
+    latestEvaluationId: string | null;
+    createdAt: string | null;
+    latestScores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number } | null;
+  };
+};
+
+export type RegisterSpeechModelMutationVariables = Exact<{
+  input: RegisterSpeechModelInput;
+}>;
+
+export type RegisterSpeechModelMutation = {
+  registerSpeechModel: {
+    id: string;
+    registryId: string;
+    engine: string;
+    name: string;
+    description: string;
+    languages: Array<string>;
+    artifactUri: string;
+    baseModelId: string;
+    status: string;
+    isDefault: boolean;
+    latestEvaluationId: string | null;
+    createdAt: string | null;
+    latestScores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number } | null;
+  };
+};
+
+export type RetireSpeechModelMutationVariables = Exact<{
+  id: string;
+}>;
+
+export type RetireSpeechModelMutation = {
+  retireSpeechModel: {
+    id: string;
+    registryId: string;
+    engine: string;
+    name: string;
+    description: string;
+    languages: Array<string>;
+    artifactUri: string;
+    baseModelId: string;
+    status: string;
+    isDefault: boolean;
+    latestEvaluationId: string | null;
+    createdAt: string | null;
+    latestScores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number } | null;
+  };
+};
+
+export type AddToGoldSetMutationVariables = Exact<{
+  recordingId: string;
+}>;
+
+export type AddToGoldSetMutation = {
+  addToGoldSet: { recordingId: string; transcriptId: string; transcriptVersion: number };
+};
+
+export type RemoveFromGoldSetMutationVariables = Exact<{
+  recordingId: string;
+}>;
+
+export type RemoveFromGoldSetMutation = { removeFromGoldSet: boolean };
+
+export type StartEvaluationMutationVariables = Exact<{
+  modelId: string;
+}>;
+
+export type StartEvaluationMutation = {
+  startEvaluation: {
+    id: string;
+    modelId: string;
+    registryId: string;
+    status: string;
+    itemsTotal: number;
+    itemsDone: number;
+    audioSeconds: number;
+    realtimeFactor: number;
+    error: string;
+    startedBy: string;
+    createdAt: string | null;
+    finishedAt: string | null;
+    scores: { werScript: number; cerScript: number; werRoman: number; cerRoman: number };
   };
 };
 
@@ -1654,6 +1910,123 @@ export const InsightsFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<InsightsFieldsFragment, unknown>;
+export const ErrorRatesFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ErrorRatesFieldsFragment, unknown>;
+export const SpeechModelFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpeechModelFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SpeechModel' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'engine' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'languages' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'artifactUri' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'baseModelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isDefault' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'latestEvaluationId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'latestScores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SpeechModelFieldsFragment, unknown>;
+export const EvaluationFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'EvaluationFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Evaluation' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'modelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsDone' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'realtimeFactor' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'error' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'startedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'finishedAt' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<EvaluationFieldsFragment, unknown>;
 export const RecordingFieldsFragmentDoc = {
   kind: 'Document',
   definitions: [
@@ -3489,6 +3862,757 @@ export const AnalyseRecordingDocument = {
     },
   ],
 } as unknown as DocumentNode<AnalyseRecordingMutation, AnalyseRecordingMutationVariables>;
+export const SpeechModelsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SpeechModels' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeRetired' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'speechModels' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeRetired' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeRetired' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SpeechModelFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpeechModelFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SpeechModel' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'engine' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'languages' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'artifactUri' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'baseModelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isDefault' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'latestEvaluationId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'latestScores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SpeechModelsQuery, SpeechModelsQueryVariables>;
+export const GoldSetDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GoldSet' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'goldSet' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'items' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'transcriptVersion' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'lines' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'addedBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'addedAt' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GoldSetQuery, GoldSetQueryVariables>;
+export const EvaluationsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Evaluations' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'modelId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'evaluations' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'modelId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'modelId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'EvaluationFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'EvaluationFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Evaluation' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'modelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsDone' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'realtimeFactor' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'error' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'startedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'finishedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<EvaluationsQuery, EvaluationsQueryVariables>;
+export const EvaluationDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Evaluation' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'evaluation' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'EvaluationFields' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'items' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'words' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'error' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'scores' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'EvaluationFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Evaluation' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'modelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsDone' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'realtimeFactor' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'error' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'startedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'finishedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<EvaluationQuery, EvaluationQueryVariables>;
+export const TrainingStatsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'TrainingStats' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'trainingStats' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'examples' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'scriptExamples' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'romanExamples' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'recordings' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastExampleAt' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<TrainingStatsQuery, TrainingStatsQueryVariables>;
+export const SetDefaultSpeechModelDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'SetDefaultSpeechModel' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'setDefaultSpeechModel' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SpeechModelFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpeechModelFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SpeechModel' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'engine' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'languages' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'artifactUri' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'baseModelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isDefault' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'latestEvaluationId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'latestScores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SetDefaultSpeechModelMutation, SetDefaultSpeechModelMutationVariables>;
+export const RegisterSpeechModelDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'RegisterSpeechModel' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'RegisterSpeechModelInput' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'registerSpeechModel' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SpeechModelFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpeechModelFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SpeechModel' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'engine' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'languages' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'artifactUri' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'baseModelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isDefault' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'latestEvaluationId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'latestScores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RegisterSpeechModelMutation, RegisterSpeechModelMutationVariables>;
+export const RetireSpeechModelDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'RetireSpeechModel' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'retireSpeechModel' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'SpeechModelFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'SpeechModelFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'SpeechModel' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'engine' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'languages' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'artifactUri' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'baseModelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isDefault' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'latestEvaluationId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'latestScores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RetireSpeechModelMutation, RetireSpeechModelMutationVariables>;
+export const AddToGoldSetDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'AddToGoldSet' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'addToGoldSet' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'recordingId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'recordingId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transcriptId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transcriptVersion' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AddToGoldSetMutation, AddToGoldSetMutationVariables>;
+export const RemoveFromGoldSetDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'RemoveFromGoldSet' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'removeFromGoldSet' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'recordingId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'recordingId' } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RemoveFromGoldSetMutation, RemoveFromGoldSetMutationVariables>;
+export const StartEvaluationDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'StartEvaluation' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'modelId' } },
+          type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'startEvaluation' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'modelId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'modelId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'EvaluationFields' } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'ErrorRatesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ErrorRates' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'werScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerScript' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'werRoman' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'cerRoman' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'EvaluationFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Evaluation' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'modelId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'registryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'scores' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ErrorRatesFields' } }],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsTotal' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'itemsDone' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'audioSeconds' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'realtimeFactor' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'error' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'startedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'finishedAt' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<StartEvaluationMutation, StartEvaluationMutationVariables>;
 export const RecordingFacetsDocument = {
   kind: 'Document',
   definitions: [
