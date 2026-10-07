@@ -1,6 +1,6 @@
 {
   "name": "@likho-ai/web-sdk",
-  "version": "0.11.0-rc.1",
+  "version": "0.11.0",
   "description": "Likho web client: typed GraphQL operations and React hooks for likho-api, uploads and live updates",
   "type": "module",
   "packageManager": "pnpm@10.34.6",
