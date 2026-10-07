@@ -22,6 +22,7 @@ export * from './hooks/users.js';
 export * from './hooks/insights.js';
 export * from './hooks/analytics.js';
 export * from './hooks/dialer.js';
+export * from './hooks/ml.js';
 export type {
   AnalyticsBucket,
   AnalyticsDimension,
@@ -39,6 +40,7 @@ export type {
   JobStatus,
   RecordingFilter,
   RecordingStatus,
+  RegisterSpeechModelInput,
   RequestImportInput,
   RequestUploadInput,
   Role,
@@ -59,7 +61,16 @@ export type {
   SpellingFieldsFragment as Spelling,
   SavedSearchFieldsFragment as SavedSearch,
   InsightsFieldsFragment as Insights,
+  SpeechModelFieldsFragment as SpeechModel,
+  EvaluationFieldsFragment as EvaluationSummary,
+  ErrorRatesFieldsFragment as ErrorRates,
 } from './gen/graphql.js';
+/** One evaluation with each gold recording's scores. */
+export type Evaluation = NonNullable<import('./gen/graphql.js').EvaluationQuery['evaluation']>;
+/** A recording of the gold set. */
+export type GoldItem = import('./gen/graphql.js').GoldSetQuery['goldSet']['items'][number];
+/** What people's corrections have given as training data. */
+export type TrainingStats = import('./gen/graphql.js').TrainingStatsQuery['trainingStats'];
 /** One yes/no observation of the auditor's form, answered from the transcript with the line that shows it. */
 export type InsightCheck = import('./gen/graphql.js').InsightsFieldsFragment['checks'][number];
 /** One scored point of the auditor's form, with the reason. */

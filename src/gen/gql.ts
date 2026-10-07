@@ -40,6 +40,20 @@ type Documents = {
   '\n  query RecordingsWithInsights($filter: RecordingFilter, $first: Int, $after: String) {\n    recordings(filter: $filter, first: $first, after: $after) {\n      items {\n        ...RecordingFields\n        insights {\n          ...InsightsFields\n        }\n      }\n      hasMore\n      endCursor\n    }\n  }\n': typeof types.RecordingsWithInsightsDocument;
   '\n  query InsightsStatus {\n    insightsStatus {\n      enabled\n      model\n      formVersion\n    }\n  }\n': typeof types.InsightsStatusDocument;
   '\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n': typeof types.AnalyseRecordingDocument;
+  '\n  fragment ErrorRatesFields on ErrorRates {\n    werScript\n    cerScript\n    werRoman\n    cerRoman\n  }\n': typeof types.ErrorRatesFieldsFragmentDoc;
+  '\n  fragment SpeechModelFields on SpeechModel {\n    id\n    registryId\n    engine\n    name\n    description\n    languages\n    artifactUri\n    baseModelId\n    status\n    isDefault\n    latestEvaluationId\n    latestScores {\n      ...ErrorRatesFields\n    }\n    createdAt\n  }\n': typeof types.SpeechModelFieldsFragmentDoc;
+  '\n  fragment EvaluationFields on Evaluation {\n    id\n    modelId\n    registryId\n    status\n    scores {\n      ...ErrorRatesFields\n    }\n    itemsTotal\n    itemsDone\n    audioSeconds\n    realtimeFactor\n    error\n    startedBy\n    createdAt\n    finishedAt\n  }\n': typeof types.EvaluationFieldsFragmentDoc;
+  '\n  query SpeechModels($includeRetired: Boolean) {\n    speechModels(includeRetired: $includeRetired) {\n      ...SpeechModelFields\n    }\n  }\n': typeof types.SpeechModelsDocument;
+  '\n  query GoldSet {\n    goldSet {\n      items {\n        recordingId\n        transcriptId\n        transcriptVersion\n        language\n        audioSeconds\n        lines\n        addedBy\n        addedAt\n      }\n      audioSeconds\n    }\n  }\n': typeof types.GoldSetDocument;
+  '\n  query Evaluations($modelId: String, $first: Int) {\n    evaluations(modelId: $modelId, first: $first) {\n      ...EvaluationFields\n    }\n  }\n': typeof types.EvaluationsDocument;
+  '\n  query Evaluation($id: String!) {\n    evaluation(id: $id) {\n      ...EvaluationFields\n      items {\n        recordingId\n        words\n        audioSeconds\n        error\n        scores {\n          ...ErrorRatesFields\n        }\n      }\n    }\n  }\n': typeof types.EvaluationDocument;
+  '\n  query TrainingStats {\n    trainingStats {\n      examples\n      scriptExamples\n      romanExamples\n      recordings\n      audioSeconds\n      lastExampleAt\n    }\n  }\n': typeof types.TrainingStatsDocument;
+  '\n  mutation SetDefaultSpeechModel($id: String!) {\n    setDefaultSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n': typeof types.SetDefaultSpeechModelDocument;
+  '\n  mutation RegisterSpeechModel($input: RegisterSpeechModelInput!) {\n    registerSpeechModel(input: $input) {\n      ...SpeechModelFields\n    }\n  }\n': typeof types.RegisterSpeechModelDocument;
+  '\n  mutation RetireSpeechModel($id: String!) {\n    retireSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n': typeof types.RetireSpeechModelDocument;
+  '\n  mutation AddToGoldSet($recordingId: String!) {\n    addToGoldSet(recordingId: $recordingId) {\n      recordingId\n      transcriptId\n      transcriptVersion\n    }\n  }\n': typeof types.AddToGoldSetDocument;
+  '\n  mutation RemoveFromGoldSet($recordingId: String!) {\n    removeFromGoldSet(recordingId: $recordingId)\n  }\n': typeof types.RemoveFromGoldSetDocument;
+  '\n  mutation StartEvaluation($modelId: String!) {\n    startEvaluation(modelId: $modelId) {\n      ...EvaluationFields\n    }\n  }\n': typeof types.StartEvaluationDocument;
   '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    callTime\n    createdAt\n    updatedAt\n  }\n': typeof types.RecordingFieldsFragmentDoc;
   '\n  query RecordingFacets($key: String!, $filter: RecordingFilter) {\n    recordingFacets(key: $key, filter: $filter) {\n      value\n      count\n    }\n  }\n': typeof types.RecordingFacetsDocument;
   '\n  fragment JobFields on Job {\n    id\n    recordingId\n    status\n    modelRegistryId\n    languagePolicy\n    force\n    progressSeconds\n    totalSeconds\n    errorCode\n    errorMessage\n    transcriptId\n    createdAt\n    startedAt\n    finishedAt\n  }\n': typeof types.JobFieldsFragmentDoc;
@@ -143,6 +157,34 @@ const documents: Documents = {
     types.InsightsStatusDocument,
   '\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n':
     types.AnalyseRecordingDocument,
+  '\n  fragment ErrorRatesFields on ErrorRates {\n    werScript\n    cerScript\n    werRoman\n    cerRoman\n  }\n':
+    types.ErrorRatesFieldsFragmentDoc,
+  '\n  fragment SpeechModelFields on SpeechModel {\n    id\n    registryId\n    engine\n    name\n    description\n    languages\n    artifactUri\n    baseModelId\n    status\n    isDefault\n    latestEvaluationId\n    latestScores {\n      ...ErrorRatesFields\n    }\n    createdAt\n  }\n':
+    types.SpeechModelFieldsFragmentDoc,
+  '\n  fragment EvaluationFields on Evaluation {\n    id\n    modelId\n    registryId\n    status\n    scores {\n      ...ErrorRatesFields\n    }\n    itemsTotal\n    itemsDone\n    audioSeconds\n    realtimeFactor\n    error\n    startedBy\n    createdAt\n    finishedAt\n  }\n':
+    types.EvaluationFieldsFragmentDoc,
+  '\n  query SpeechModels($includeRetired: Boolean) {\n    speechModels(includeRetired: $includeRetired) {\n      ...SpeechModelFields\n    }\n  }\n':
+    types.SpeechModelsDocument,
+  '\n  query GoldSet {\n    goldSet {\n      items {\n        recordingId\n        transcriptId\n        transcriptVersion\n        language\n        audioSeconds\n        lines\n        addedBy\n        addedAt\n      }\n      audioSeconds\n    }\n  }\n':
+    types.GoldSetDocument,
+  '\n  query Evaluations($modelId: String, $first: Int) {\n    evaluations(modelId: $modelId, first: $first) {\n      ...EvaluationFields\n    }\n  }\n':
+    types.EvaluationsDocument,
+  '\n  query Evaluation($id: String!) {\n    evaluation(id: $id) {\n      ...EvaluationFields\n      items {\n        recordingId\n        words\n        audioSeconds\n        error\n        scores {\n          ...ErrorRatesFields\n        }\n      }\n    }\n  }\n':
+    types.EvaluationDocument,
+  '\n  query TrainingStats {\n    trainingStats {\n      examples\n      scriptExamples\n      romanExamples\n      recordings\n      audioSeconds\n      lastExampleAt\n    }\n  }\n':
+    types.TrainingStatsDocument,
+  '\n  mutation SetDefaultSpeechModel($id: String!) {\n    setDefaultSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n':
+    types.SetDefaultSpeechModelDocument,
+  '\n  mutation RegisterSpeechModel($input: RegisterSpeechModelInput!) {\n    registerSpeechModel(input: $input) {\n      ...SpeechModelFields\n    }\n  }\n':
+    types.RegisterSpeechModelDocument,
+  '\n  mutation RetireSpeechModel($id: String!) {\n    retireSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n':
+    types.RetireSpeechModelDocument,
+  '\n  mutation AddToGoldSet($recordingId: String!) {\n    addToGoldSet(recordingId: $recordingId) {\n      recordingId\n      transcriptId\n      transcriptVersion\n    }\n  }\n':
+    types.AddToGoldSetDocument,
+  '\n  mutation RemoveFromGoldSet($recordingId: String!) {\n    removeFromGoldSet(recordingId: $recordingId)\n  }\n':
+    types.RemoveFromGoldSetDocument,
+  '\n  mutation StartEvaluation($modelId: String!) {\n    startEvaluation(modelId: $modelId) {\n      ...EvaluationFields\n    }\n  }\n':
+    types.StartEvaluationDocument,
   '\n  fragment RecordingFields on Recording {\n    id\n    originalName\n    mediaId\n    sizeBytes\n    sha256\n    durationSeconds\n    channels\n    sampleRate\n    source\n    externalId\n    attributes {\n      key\n      value\n    }\n    status\n    failureReason\n    latestTranscriptId\n    detectedLanguage\n    languageProbability\n    callTime\n    createdAt\n    updatedAt\n  }\n':
     types.RecordingFieldsFragmentDoc,
   '\n  query RecordingFacets($key: String!, $filter: RecordingFilter) {\n    recordingFacets(key: $key, filter: $filter) {\n      value\n      count\n    }\n  }\n':
@@ -412,6 +454,90 @@ export function graphql(
 export function graphql(
   source: '\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n',
 ): (typeof documents)['\n  mutation AnalyseRecording($id: String!, $force: Boolean) {\n    analyseRecording(id: $id, force: $force) {\n      ...InsightsFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment ErrorRatesFields on ErrorRates {\n    werScript\n    cerScript\n    werRoman\n    cerRoman\n  }\n',
+): (typeof documents)['\n  fragment ErrorRatesFields on ErrorRates {\n    werScript\n    cerScript\n    werRoman\n    cerRoman\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment SpeechModelFields on SpeechModel {\n    id\n    registryId\n    engine\n    name\n    description\n    languages\n    artifactUri\n    baseModelId\n    status\n    isDefault\n    latestEvaluationId\n    latestScores {\n      ...ErrorRatesFields\n    }\n    createdAt\n  }\n',
+): (typeof documents)['\n  fragment SpeechModelFields on SpeechModel {\n    id\n    registryId\n    engine\n    name\n    description\n    languages\n    artifactUri\n    baseModelId\n    status\n    isDefault\n    latestEvaluationId\n    latestScores {\n      ...ErrorRatesFields\n    }\n    createdAt\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  fragment EvaluationFields on Evaluation {\n    id\n    modelId\n    registryId\n    status\n    scores {\n      ...ErrorRatesFields\n    }\n    itemsTotal\n    itemsDone\n    audioSeconds\n    realtimeFactor\n    error\n    startedBy\n    createdAt\n    finishedAt\n  }\n',
+): (typeof documents)['\n  fragment EvaluationFields on Evaluation {\n    id\n    modelId\n    registryId\n    status\n    scores {\n      ...ErrorRatesFields\n    }\n    itemsTotal\n    itemsDone\n    audioSeconds\n    realtimeFactor\n    error\n    startedBy\n    createdAt\n    finishedAt\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query SpeechModels($includeRetired: Boolean) {\n    speechModels(includeRetired: $includeRetired) {\n      ...SpeechModelFields\n    }\n  }\n',
+): (typeof documents)['\n  query SpeechModels($includeRetired: Boolean) {\n    speechModels(includeRetired: $includeRetired) {\n      ...SpeechModelFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query GoldSet {\n    goldSet {\n      items {\n        recordingId\n        transcriptId\n        transcriptVersion\n        language\n        audioSeconds\n        lines\n        addedBy\n        addedAt\n      }\n      audioSeconds\n    }\n  }\n',
+): (typeof documents)['\n  query GoldSet {\n    goldSet {\n      items {\n        recordingId\n        transcriptId\n        transcriptVersion\n        language\n        audioSeconds\n        lines\n        addedBy\n        addedAt\n      }\n      audioSeconds\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Evaluations($modelId: String, $first: Int) {\n    evaluations(modelId: $modelId, first: $first) {\n      ...EvaluationFields\n    }\n  }\n',
+): (typeof documents)['\n  query Evaluations($modelId: String, $first: Int) {\n    evaluations(modelId: $modelId, first: $first) {\n      ...EvaluationFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query Evaluation($id: String!) {\n    evaluation(id: $id) {\n      ...EvaluationFields\n      items {\n        recordingId\n        words\n        audioSeconds\n        error\n        scores {\n          ...ErrorRatesFields\n        }\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query Evaluation($id: String!) {\n    evaluation(id: $id) {\n      ...EvaluationFields\n      items {\n        recordingId\n        words\n        audioSeconds\n        error\n        scores {\n          ...ErrorRatesFields\n        }\n      }\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query TrainingStats {\n    trainingStats {\n      examples\n      scriptExamples\n      romanExamples\n      recordings\n      audioSeconds\n      lastExampleAt\n    }\n  }\n',
+): (typeof documents)['\n  query TrainingStats {\n    trainingStats {\n      examples\n      scriptExamples\n      romanExamples\n      recordings\n      audioSeconds\n      lastExampleAt\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation SetDefaultSpeechModel($id: String!) {\n    setDefaultSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation SetDefaultSpeechModel($id: String!) {\n    setDefaultSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation RegisterSpeechModel($input: RegisterSpeechModelInput!) {\n    registerSpeechModel(input: $input) {\n      ...SpeechModelFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation RegisterSpeechModel($input: RegisterSpeechModelInput!) {\n    registerSpeechModel(input: $input) {\n      ...SpeechModelFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation RetireSpeechModel($id: String!) {\n    retireSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation RetireSpeechModel($id: String!) {\n    retireSpeechModel(id: $id) {\n      ...SpeechModelFields\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation AddToGoldSet($recordingId: String!) {\n    addToGoldSet(recordingId: $recordingId) {\n      recordingId\n      transcriptId\n      transcriptVersion\n    }\n  }\n',
+): (typeof documents)['\n  mutation AddToGoldSet($recordingId: String!) {\n    addToGoldSet(recordingId: $recordingId) {\n      recordingId\n      transcriptId\n      transcriptVersion\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation RemoveFromGoldSet($recordingId: String!) {\n    removeFromGoldSet(recordingId: $recordingId)\n  }\n',
+): (typeof documents)['\n  mutation RemoveFromGoldSet($recordingId: String!) {\n    removeFromGoldSet(recordingId: $recordingId)\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation StartEvaluation($modelId: String!) {\n    startEvaluation(modelId: $modelId) {\n      ...EvaluationFields\n    }\n  }\n',
+): (typeof documents)['\n  mutation StartEvaluation($modelId: String!) {\n    startEvaluation(modelId: $modelId) {\n      ...EvaluationFields\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
