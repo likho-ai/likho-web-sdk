@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "592a4b8f1f4425e081cb183c38ce9ecfedbe496d",
+  "include-component-in-tag": false,
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "likho-web-sdk",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
